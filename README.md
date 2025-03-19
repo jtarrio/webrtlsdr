@@ -1,55 +1,69 @@
-# Radio Receiver
+# Web RTL-SDR
 
-An application to listen to radio transmissions from your browser using a cheap USB digital TV tuner.
-
-Try it out at [radio.ea1iti.es](https://radio.ea1iti.es).
+Access RTL-SDR devices and receive and demodulate radio signals from your web application.
 
 ## What is this
 
-Radio Receiver is an HTML5 webpage that uses an USB digital TV receiver to capture radio signals, demodulates them in the browser, and plays the demodulated audio through your computer's speakers or headphones. This is called SDR (Software-Defined Radio), because all the radio signal processing is done by software running in the computer instead of purpose-built hardware.
+This is a library that provides functions to access and operate an RTL-SDR device from a web application, receive radio signals, demodulate them, and play it through the computer's speakers or headphones.
+
+It provides access at several levels, from low-level operations on the RTL-SDR stick itself, to a full reception/demodulation pipeline.
+
+This library powers Radio Receiver, my browser-based SDR application, which you can try at [radio.ea1iti.es](https://radio.ea1iti.es).
 
 ## Compatible hardware and software
 
-Radio Receiver was written to work with an RTL-2832U-based DVB-T (European digital TV) USB receiver, with a R820T tuner chip. This hardware configuration is a little dated, but support for newer tuner chips is planned.
+Web RTL-SDR was written to work with an RTL-2832U-based DVB-T (European digital TV) USB receiver, with a R820/828/860 tuner chip. Support for other chips may be added as required.
 
-## Building
-
-### During development
-
-For a development build served from your computer with live reload:
+## How to install
 
 ```shell
-$ npm run watch
+npm install @jtarrio/webrtlsdr
 ```
 
-This script should open Radio Receiver on your browser automatically. If it doesn't, check the output and open the URL that it gives you.
+## How to use
 
-Whenever you make changes, they will be compiled and the page will be reloaded automatically.
+I want to write a comprehensive set of documentation, but in the meantime, here is an introduction.
 
-If you want to build Radio Receiver manually for development, use this command:
+> [!NOTE]
+> This library uses the WebUSB API to access the RTL-SDR device. This means that you need to do two things for it to work:
+>
+> - You must connect to the RTL-SDR device in response to a user gesture (a click or tap, generally.) You cannot, for example, connect to it automatically on opening a webpage or after a timeout.
+> - Your web page must be served through a secure context. That means a HTTPS connection or a connection to `localhost`.
 
-```shell
-$ npm run build
+### High-level access to RTL-SDR (demodulate and play through the computer's speakers)
+
+```typescript
+import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator";
+import { getMode } from "@jtarrio/webrtlsdr/demod/scheme";
+import { Radio } from "@jtarrio/webrtlsdr/radio/radio";
+import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr/rtl2832u";
+
+const sampleRate = 1024000;
+let demodulator = new Demodulator(sampleRate);
+let radio = new Radio(new RTL2832U_Provider(), spectrum, sampleRate);
+
+radio.setFrequency(88500000);
+demodulator.setVolume(1);
+demodulator.setMode(getMode("WBFM"));
+
+getElementById("playButton").addEventListener("click", () => radio.start());
+getElementById("stopButton").addEventListener("click", () => radio.stop());
 ```
 
-The compiled application is available in the `dist/apps/radioreceiver` directory.
+### Low-level access (read samples straight from the stick)
 
-### For release
-
-For a release build:
-
-```shell
-$ npm run dist
+```typescript
+let provider = new RTL2832U_Provider();
+let device = await provider.get();
+await device.setSampleRate(1024000);
+await device.setCenterFrequency(88500000);
+await device.setGain(null);
+await device.resetBuffer();
+let samples = await device.readSamples(65536);
 ```
-
-The compiled application is available in the `dist/apps/radioreceiver` directory; you can copy its contents to your webserver.
-
-Note: your website must be served over HTTPS, not HTTP. This is required for WebUSB.
 
 ## Acknowledgements
 
-This started as a fork of https://github.com/google/radioreceiver that has been updated to use the HTML5 USB API and modern features, and converted to TypeScript.
+This is a spinoff of https://github.com/jtarrio/radioreceiver, which is, in turn, a fork of https://github.com/google/radioreceiver. I am the original author, but I was employed by Google at the time.
 
 Kudos and thanks to the [RTL-SDR project](http://sdr.osmocom.org/trac/wiki/rtl-sdr) for figuring out the magic numbers needed to drive the USB tuner.
-
-If you want to experiment further with Software-Defined Radio and listen to more things using your cheap tuner, you can try [the various programs listed on rtl-sdr.com](http://www.rtl-sdr.com/big-list-rtl-sdr-supported-software/).

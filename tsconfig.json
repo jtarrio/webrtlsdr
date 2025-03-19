@@ -2,18 +2,18 @@
   "compilerOptions": {
     "target": "esnext",
     "lib": [
-      "webworker",
       "esnext",
       "dom"
     ],
     "module": "esnext",
     "moduleResolution": "node",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
     "isolatedModules": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "useDefineForClassFields": false,
     "strict": true,
     "skipLibCheck": true
   }

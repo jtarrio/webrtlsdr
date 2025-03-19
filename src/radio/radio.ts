@@ -50,7 +50,7 @@ enum State {
   PLAYING,
 }
 
-/** Provides controls to play, stop, and scan the radio. */
+/** Provides controls to play, stop, and tune the radio. */
 export class Radio extends EventTarget {
   /** @param sampleReceiver the object that will receive the radio samples. */
   constructor(

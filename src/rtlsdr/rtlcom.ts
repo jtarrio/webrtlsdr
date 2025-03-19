@@ -161,7 +161,7 @@ export class RtlCom {
    */
   async getSamples(length: number): Promise<ArrayBuffer> {
     let result = await this.device.transferIn(1, length);
-    if (result.status == "ok") return result.data!.buffer;
+    if (result.status == "ok") return result.data!.buffer as ArrayBuffer;
     if (result.status == "stall") {
       await this.device.clearHalt("in", 1);
       return new ArrayBuffer(length);
@@ -350,7 +350,7 @@ export class RtlCom {
       index: index,
     };
     let result = await this.device.controlTransferIn(ti, Math.max(8, length));
-    if (result.status == "ok") return result.data!.buffer.slice(0, length);
+    if (result.status == "ok") return result.data!.buffer.slice(0, length) as ArrayBuffer;
     throw new RadioError(
       `USB read failed value=0x${value.toString(16)} index=0x${index.toString(16)} status=${result.status}`,
       RadioErrorType.UsbTransferError
