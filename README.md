@@ -40,15 +40,21 @@ import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr/rtl2832u";
 
 const sampleRate = 1024000;
 let demodulator = new Demodulator(sampleRate);
-let radio = new Radio(new RTL2832U_Provider(), spectrum, sampleRate);
+let radio = new Radio(new RTL2832U_Provider(), demodulator, sampleRate);
 
 radio.setFrequency(88500000);
 demodulator.setVolume(1);
 demodulator.setMode(getMode("WBFM"));
 
-getElementById("playButton").addEventListener("click", () => radio.start());
-getElementById("stopButton").addEventListener("click", () => radio.stop());
+document
+  .getElementById("playButton")
+  .addEventListener("click", () => radio.start());
+document
+  .getElementById("stopButton")
+  .addEventListener("click", () => radio.stop());
 ```
+
+You can also see a full example at [`examples/highlevel`](examples/highlevel/script.js).
 
 ### Low-level access (read samples straight from the stick)
 
@@ -60,7 +66,10 @@ await device.setCenterFrequency(88500000);
 await device.setGain(null);
 await device.resetBuffer();
 let samples = await device.readSamples(65536);
+await device.close();
 ```
+
+You can also see a full example at [`examples/lowlevel`](examples/lowlevel/script.js).
 
 ## Acknowledgements
 

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="importmap">
+      {
+        "imports": {
+          "@jtarrio/webrtlsdr/rtlsdr/rtl2832u": "../../dist/rtlsdr/rtl2832u.js",
+          "@jtarrio/webrtlsdr/rtlsdr/rtldevice": "../../dist/rtlsdr/rtldevice.js"
+        },
+        "scopes": {
+          "/dist/": {
+            "/dist/errors": "/dist/errors.js",
+            "/dist/rtlsdr/r820t": "/dist/rtlsdr/r820t.js",
+            "/dist/rtlsdr/r828d": "/dist/rtlsdr/r828d.js",
+            "/dist/rtlsdr/r8xx": "/dist/rtlsdr/r8xx.js",
+            "/dist/rtlsdr/rtlcom": "/dist/rtlsdr/rtlcom.js",
+            "/dist/rtlsdr/rtldevice": "/dist/rtlsdr/rtldevice.js"
+          }
+        }
+      }
+    </script>
+    <script src="script.js" type="module"></script>
+  </head>
+  <body>
+    <h1>Low-level Web RTL-SDR demo</h1>
+
+    <div>
+      <button id="startButton">Start</button>
+    </div>
+
+    <div>
+      <label for="frequencyInput">Center frequency: </label
+      ><input id="frequencyInput" type="number" value="88500000" />
+    </div>
+
+    <div>
+      <label for="gainInput">Gain: </label
+      ><input id="gainInput" type="range" min="0" max="50" disabled />
+      <input id="autoGainBox" type="checkbox" checked /><label for="autoGainBox"
+        >Auto gain</label
+      >
+    </div>
+
+    <fieldset>
+      <legend>Log</legend>
+      <textarea
+        id="logArea"
+        readonly
+        style="width: 100%; height: 50em"
+      ></textarea>
+    </fieldset>
+  </body>
+</html>
