@@ -32,6 +32,8 @@ I want to write a comprehensive set of documentation, but in the meantime, here 
 
 ### High-level access to RTL-SDR (demodulate and play through the computer's speakers)
 
+This program is a complete stereo FM radio receiver tuned for 88.5 MHz.
+
 ```typescript
 import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator";
 import { getMode } from "@jtarrio/webrtlsdr/demod/scheme";
@@ -58,6 +60,8 @@ You can also see a full example at [`examples/highlevel`](examples/highlevel/scr
 
 ### Low-level access (read samples straight from the stick)
 
+This program connects to the RTL-SDR stick, tunes to 88.5 MHz, reads 65536 samples, and closes the connection.
+
 ```typescript
 let provider = new RTL2832U_Provider();
 let device = await provider.get();
@@ -73,6 +77,6 @@ You can also see a full example at [`examples/lowlevel`](examples/lowlevel/scrip
 
 ## Acknowledgements
 
-This is a spinoff of https://github.com/jtarrio/radioreceiver, which is, in turn, a fork of https://github.com/google/radioreceiver. I am the original author, but I was employed by Google at the time.
+This is a spinoff of https://github.com/jtarrio/radioreceiver, which is, in turn, a fork of https://github.com/google/radioreceiver. (I am the original author, but I was employed by Google at the time.)
 
 Kudos and thanks to the [RTL-SDR project](http://sdr.osmocom.org/trac/wiki/rtl-sdr) for figuring out the magic numbers needed to drive the USB tuner.
