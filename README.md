@@ -30,6 +30,9 @@ I want to write a comprehensive set of documentation, but in the meantime, here 
 > - You must connect to the RTL-SDR device in response to a user gesture (a click or tap, generally.) You cannot, for example, connect to it automatically on opening a webpage or after a timeout.
 > - Your web page must be served through a secure context. That means a HTTPS connection or a connection to `localhost`.
 
+> [!NOTE]
+> This is a new library and the API is still being refined. For `0.x.y` versions, the `x` component will be incremented when there are incompatible API changes.
+
 ### High-level access to RTL-SDR (demodulate and play through the computer's speakers)
 
 This program is a complete stereo FM radio receiver tuned for 88.5 MHz.
