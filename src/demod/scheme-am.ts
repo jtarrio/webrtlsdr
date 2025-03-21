@@ -17,7 +17,7 @@ import { AMDemodulator } from "../dsp/demodulators";
 import { FrequencyShifter, FIRFilter } from "../dsp/filters";
 import { getPower } from "../dsp/power";
 import { ComplexDownsampler } from "../dsp/resamplers";
-import { Demodulated, Mode, ModulationScheme } from "./scheme";
+import { Demodulated, Mode, ModulationScheme } from "./modes";
 
 /** A demodulator for amplitude modulated signals. */
 export class SchemeAM implements ModulationScheme {

@@ -24,7 +24,7 @@
  * to observe the demodulator's state.
  */
 
-import { ModulationScheme, Mode } from "./scheme";
+import { ModulationScheme, Mode } from "./modes";
 import { SchemeAM } from "./scheme-am";
 import { SchemeCW } from "./scheme-cw";
 import { SchemeNBFM } from "./scheme-nbfm";
@@ -32,11 +32,6 @@ import { SchemeSSB } from "./scheme-ssb";
 import { SchemeWBFM } from "./scheme-wbfm";
 import { Player } from "../audio/player";
 import { concatenateReceivers, SampleReceiver } from "../radio/sample_receiver";
-
-type Frequency = {
-  center: number;
-  offset: number;
-};
 
 /** The demodulator class. */
 export class Demodulator extends EventTarget implements SampleReceiver {
@@ -181,6 +176,11 @@ export class StereoStatusEvent extends CustomEvent<boolean> {
     super("stereo-status", { detail: stereo, bubbles: true, composed: true });
   }
 }
+
+type Frequency = {
+  center: number;
+  offset: number;
+};
 
 class SquelchControl {
   constructor(private sampleRate: number) {}

@@ -16,7 +16,7 @@ import { makeLowPassKernel } from "../dsp/coefficients";
 import { AGC, FIRFilter, FrequencyShifter } from "../dsp/filters";
 import { getPower } from "../dsp/power";
 import { ComplexDownsampler } from "../dsp/resamplers";
-import { Demodulated, Mode, ModulationScheme } from "./scheme";
+import { Demodulated, Mode, ModulationScheme } from "./modes";
 
 /** Output frequency of the zero-beat CW signals. */
 const ToneFrequency = 600;

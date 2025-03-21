@@ -24,6 +24,10 @@ export interface SampleReceiver {
   andThen(next: SampleReceiver): SampleReceiver;
 }
 
+/**
+ * A function that returns a sample receiver that executes the given receivers in sequence.
+ * Use it in your implementation of SampleReceiver.andThen.
+ */
 export function concatenateReceivers(
   prev: SampleReceiver,
   next: SampleReceiver

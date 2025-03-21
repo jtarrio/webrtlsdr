@@ -17,7 +17,7 @@ import { FMDemodulator } from "../dsp/demodulators";
 import { FIRFilter, FrequencyShifter } from "../dsp/filters";
 import { getPower } from "../dsp/power";
 import { ComplexDownsampler } from "../dsp/resamplers";
-import { Demodulated, Mode, ModulationScheme } from "./scheme";
+import { Demodulated, Mode, ModulationScheme } from "./modes";
 
 /** A demodulator for narrowband FM signals. */
 export class SchemeNBFM implements ModulationScheme {

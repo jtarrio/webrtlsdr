@@ -36,9 +36,9 @@ This program is a complete stereo FM radio receiver tuned for 88.5 MHz.
 
 ```typescript
 import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator";
-import { getMode } from "@jtarrio/webrtlsdr/demod/scheme";
-import { Radio } from "@jtarrio/webrtlsdr/radio/radio";
-import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr/rtl2832u";
+import { getMode } from "@jtarrio/webrtlsdr/demod/modes";
+import { Radio } from "@jtarrio/webrtlsdr/radio";
+import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr";
 
 const sampleRate = 1024000;
 let demodulator = new Demodulator(sampleRate);
@@ -63,6 +63,8 @@ You can also see a full example at [`examples/highlevel`](examples/highlevel/scr
 This program connects to the RTL-SDR stick, tunes to 88.5 MHz, reads 65536 samples, and closes the connection.
 
 ```typescript
+import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr";
+
 let provider = new RTL2832U_Provider();
 let device = await provider.get();
 await device.setSampleRate(1024000);

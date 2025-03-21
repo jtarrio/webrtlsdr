@@ -19,6 +19,7 @@ import { makeBlackmanWindow } from "../dsp/coefficients";
 import { FFT } from "../dsp/fft";
 import { concatenateReceivers, SampleReceiver } from "../radio/sample_receiver";
 
+/** A sample receiver that computes the received signal's spectrum. */
 export class Spectrum implements SampleReceiver {
   constructor(fftSize?: number) {
     if (fftSize === undefined) {
@@ -69,6 +70,11 @@ export class Spectrum implements SampleReceiver {
     return this.lastFrequency;
   }
 
+  /**
+   * Populates the given array with the spectrum of the latest received signals.
+   * For best results, the array should have at least `size` entries; if it's smaller,
+   * it will be filled with whatever fits.
+   */
   getSpectrum(spectrum: Float32Array) {
     if (this.dirty) {
       let fft = this.fft.transformCircularBuffers(this.I, this.Q);

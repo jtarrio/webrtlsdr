@@ -17,7 +17,7 @@ import { Sideband, SSBDemodulator } from "../dsp/demodulators";
 import { FrequencyShifter, AGC, FIRFilter } from "../dsp/filters";
 import { getPower } from "../dsp/power";
 import { ComplexDownsampler } from "../dsp/resamplers";
-import { Demodulated, Mode, ModulationScheme } from "./scheme";
+import { Demodulated, Mode, ModulationScheme } from "./modes";
 
 /** A demodulator for single-sideband modulated signals. */
 export class SchemeSSB implements ModulationScheme {

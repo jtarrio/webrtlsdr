@@ -1,24 +1,16 @@
 import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator";
 import {
-  getBandwidth,
   getMode,
+  getParameters,
   getSchemes,
-  getSquelch,
-  hasBandwidth,
-  hasSquelch,
-  hasStereo,
-  withBandwidth,
-  withSquelch,
-  withStereo,
-} from "@jtarrio/webrtlsdr/demod/scheme";
-import { Radio } from "@jtarrio/webrtlsdr/radio/radio";
-import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr/rtl2832u";
-import { DirectSampling } from "@jtarrio/webrtlsdr/rtlsdr/rtldevice";
+} from "@jtarrio/webrtlsdr/demod/modes";
+import { Radio } from "@jtarrio/webrtlsdr/radio";
+import { DirectSampling, RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr";
 
 var elements = {};
 var demodulator;
 var radio;
-var modes = {};
+var knownModes = {};
 
 async function main() {
   // Create the demodulator and radio and connect them.
@@ -108,40 +100,44 @@ function onVolumeInputChange() {
 
 function onSchemeSelectChange() {
   let mode = demodulator.getMode();
-  modes[mode.scheme] = demodulator.getMode();
+  knownModes[mode.scheme] = demodulator.getMode();
   let scheme = elements.schemeSelect.selectedOptions[0].value;
-  mode = modes[scheme];
+  mode = knownModes[scheme];
   if (mode === undefined) return;
   demodulator.setMode(mode);
   for (let option of elements.schemeSelect.options) {
     option.selected = option.value == mode.scheme;
   }
-  elements.bandwidthInput.disabled = !hasBandwidth(mode);
-  elements.bandwidthInput.value = String(getBandwidth(mode));
-  elements.squelchInput.disabled = !hasSquelch(mode);
-  elements.squelchInput.value = String(getSquelch(mode));
-  elements.stereoBox.checked = hasStereo(mode);
+  let modeParams = getParameters(mode);
+  elements.bandwidthInput.disabled = !modeParams.hasBandwidth();
+  elements.bandwidthInput.value = String(modeParams.getBandwidth());
+  elements.squelchInput.disabled = !modeParams.hasSquelch();
+  elements.squelchInput.value = String(modeParams.getSquelch());
+  elements.stereoBox.checked = modeParams.hasStereo();
 }
 
 function onBandwidthInputChange() {
+  let modeParams = getParameters(demodulator.getMode());
   setNumberInput(
     elements.bandwidthInput,
-    () => getBandwidth(demodulator.getMode()),
-    (v) => demodulator.setMode(withBandwidth(v, demodulator.getMode()))
+    () => modeParams.getBandwidth(),
+    (v) => demodulator.setMode(modeParams.setBandwidth(v).mode)
   );
 }
 
 function onSquelchInputChange() {
+  let modeParams = getParameters(demodulator.getMode());
   setNumberInput(
     elements.squelchInput,
-    () => getSquelch(demodulator.getMode()),
-    (v) => demodulator.setMode(withSquelch(v, demodulator.getMode()))
+    () => modeParams.getSquelch(),
+    (v) => demodulator.setMode(modeParams.setSquelch(v).mode)
   );
 }
 
 function onStereoBoxChange() {
+  let modeParams = getParameters(demodulator.getMode());
   let checked = elements.stereoBox.checked;
-  demodulator.setMode(withStereo(checked, demodulator.getMode()));
+  demodulator.setMode(modeParams.setStereo(checked).mode);
 }
 
 function setNumberInput(element, getter, setter) {
@@ -159,8 +155,10 @@ function onRadio(e) {
   if (e.detail.type == "directSampling") msg += ` — ${e.detail.active}`;
   if (e.detail.type == "error") msg += ` — ${e.detail.exception}`;
   elements.logArea.value = msg + "\n" + elements.logArea.value;
-  if (e.detail.type == "started" || e.detail.type == "stopped")
-    setElementValues();
+  if (e.detail.type == "started" || e.detail.type == "stopped") {
+    elements.playButton.disabled = radio.isPlaying();
+    elements.stopButton.disabled = !radio.isPlaying();  
+  }
 }
 
 function onStereoStatus(e) {
@@ -192,7 +190,7 @@ function preparePage() {
     option.value = mode;
     option.textContent = mode;
     elements.schemeSelect.appendChild(option);
-    modes[mode] = getMode(mode);
+    knownModes[mode] = getMode(mode);
   }
 
   elements.playButton.disabled = radio.isPlaying();
@@ -213,11 +211,12 @@ function preparePage() {
   for (let option of elements.schemeSelect.options) {
     option.selected = option.value == mode.scheme;
   }
-  elements.bandwidthInput.disabled = !hasBandwidth(mode);
-  elements.bandwidthInput.value = String(getBandwidth(mode));
-  elements.squelchInput.disabled = !hasSquelch(mode);
-  elements.squelchInput.value = String(getSquelch(mode));
-  elements.stereoBox.checked = hasStereo(mode);
+  let modeParams = getParameters(mode);
+  elements.bandwidthInput.disabled = !modeParams.hasBandwidth();
+  elements.bandwidthInput.value = String(modeParams.getBandwidth());
+  elements.squelchInput.disabled = !modeParams.hasSquelch();
+  elements.squelchInput.value = String(modeParams.getSquelch());
+  elements.stereoBox.checked = modeParams.hasStereo();
 }
 
 window.addEventListener("load", main);

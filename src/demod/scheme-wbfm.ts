@@ -17,7 +17,7 @@ import { FMDemodulator, StereoSeparator } from "../dsp/demodulators";
 import { FrequencyShifter, Deemphasizer, FIRFilter } from "../dsp/filters";
 import { getPower } from "../dsp/power";
 import { ComplexDownsampler, RealDownsampler } from "../dsp/resamplers";
-import { Demodulated, Mode, ModulationScheme } from "./scheme";
+import { Demodulated, Mode, ModulationScheme } from "./modes";
 
 /** A demodulator for wideband FM signals. */
 export class SchemeWBFM implements ModulationScheme {
