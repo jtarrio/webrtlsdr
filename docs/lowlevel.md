@@ -206,7 +206,7 @@ for (let i = 0; i < len; ++i) {
 }
 ```
 
-### Reading samples continuously
+### Read samples continuously
 
 The previous section explains how to read a block of samples. If you want to read samples continously, you still use the `readSamples()` async method, but in a different way: you should always have at least two calls to `readSamples()` in flight.
 
@@ -238,7 +238,7 @@ function processSamples(samples) {
 }
 ```
 
-## Closing the RTL-SDR device
+## Close the RTL-SDR device
 
 Call the `close()` async method to stop the RTL-SDR device and release its resources.
 
