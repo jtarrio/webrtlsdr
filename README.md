@@ -22,16 +22,10 @@ npm install @jtarrio/webrtlsdr
 
 ## How to use
 
-I want to write a comprehensive set of documentation, but in the meantime, here is an introduction.
-
-> [!NOTE]
-> This library uses the WebUSB API to access the RTL-SDR device. This means that you need to do two things for it to work:
->
-> - You must connect to the RTL-SDR device in response to a user gesture (a click or tap, generally.) You cannot, for example, connect to it automatically on opening a webpage or after a timeout.
-> - Your web page must be served through a secure context. That means a HTTPS connection or a connection to `localhost`.
-
 > [!NOTE]
 > This is a new library and the API is still being refined. For `0.x.y` versions, the `x` component will be incremented when there are incompatible API changes.
+
+See [`docs/README.md`] for the documentation or check out the following examples.
 
 ### High-level access to RTL-SDR (demodulate and play through the computer's speakers)
 
