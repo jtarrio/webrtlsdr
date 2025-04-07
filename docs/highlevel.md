@@ -394,3 +394,73 @@ By default, the volume is `0`.
 ## Example
 
 For an example that uses many of the functions, classes, and methods described above, check [`examples/highlevel`](../examples/highlevel/).
+
+## Extra goodies
+
+The high-level API has some additional functionalities that can help you build your radio application.
+
+### Use several sample receivers at once
+
+Sometimes, you may want the `Radio` to send samples to more than one `SampleReceiver`. For example, the [`Radio Receiver`](https://github.com/jtarrio/radioreceiver) application demodulates the radio signals with the `Demodulator` at the same time that it computes their frequency spectrum using another `SampleReceiver`.
+
+The application achieves this with a `CompositeReceiver`. Every time one of the methods of the `CompositeReceiver` object is called, it will call the same method in every component receiver.
+
+```typescript
+import { CompositeReceiver } from "@jtarrio/webrtlsdr/radio";
+
+let demodulator = new Demodulator();
+let spectrum = new Spectrum();
+let otherReceiver = new MySampleReceiver();
+let radio = new Radio(
+  new RTL2832U_Provider(),
+  CompositeReceiver.of(demodulator, spectrum, otherReceiver)
+);
+```
+
+### Trigger periodic events
+
+Use the `SampleCounter` to dispatch an event several times per second. This class is a `SampleReceiver` that counts the number of received samples and triggers an event when appropriate.
+
+The class constructor takes the number of events per second that should be triggered, and you can listen on its `sample-click` event.
+
+```typescript
+// Trigger the event 20 times per second
+let sampleCounter = new SampleCounter(20);
+let radio = new Radio(new RTL2832U_Provider(), sampleCounter);
+sampleCounter.addEventListener("sample-click", onSampleClick);
+
+function onSampleClick() {
+  console.log("Click!");
+}
+```
+
+### Compute the frequency spectrum
+
+You can use the `Spectrum` sample receiver to compute the frequency spectrum of your received radio signals.
+
+It receives the sample stream and you can call its `getSpectrum()` method periodically to get the spectrum of the latest samples (you can use `SampleCounter` for this.)
+
+The `Spectrum` class has a `size` property that contains the number of frequency buckets in the spectrum. This size is always a power of 2. You can set it to another value if you wish — if you don't specify a power of 2, it will be set to the next higher power of 2.
+
+This class also has a `getSpectrum()` method. This method takes a `Float32Array` that will be populated with the content of the spectrum of the last few received samples. This array should be of the same size returned by the `size` property, but it is not an error if it isn't: only the elements that fit in the array will be populated.
+
+Each element of the populated array contains the power for that frequency bin in decibels (dB). The first half of the elements contains the positive frequency bins, and the second half contains the negative frequency bins.
+
+```typescript
+import { Spectrum } from "@jtarrio/webrtlsdr/demod/spectrum";
+
+let demodulator = new Demodulator();
+let spectrum = new Spectrum();
+let sampleCounter = new SampleCounter(20);
+let radio = new Radio(
+  new RTL2832U_Provider(),
+  CompositeReceiver.of(spectrum, demodulator, sampleCounter)
+);
+
+sampleCounter.addEventListener("sample-click", onSampleClick);
+let spec = new Float32Array(spectrum.size);
+function onSampleClick() {
+  spectrum.getSpectrum(spec);
+  /* do something with the spectrum */
+}
+```
