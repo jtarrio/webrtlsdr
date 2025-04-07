@@ -24,9 +24,6 @@ npm install @jtarrio/webrtlsdr
 
 ## How to use
 
-> [!NOTE]
-> This is a new library and the API is still being refined. For `0.x.y` versions, the `x` component will be incremented when there are incompatible API changes.
-
 See [the `docs` directory](docs/README.md) for the documentation or check out the following examples.
 
 ### High-level access to RTL-SDR (demodulate and play through the computer's speakers)
