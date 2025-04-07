@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { concatenateReceivers, SampleReceiver } from "../radio/sample_receiver";
+import { SampleReceiver } from "../radio";
 
 /** A SampleReceiver that counts received samples to send a `sample-click` event periodically. */
 export class SampleCounter extends EventTarget implements SampleReceiver {
@@ -20,12 +20,14 @@ export class SampleCounter extends EventTarget implements SampleReceiver {
    * @param sampleRate The initial sample rate.
    * @param clicksPerSecond The number of events per second.
    */
-  constructor(private sampleRate: number, private clicksPerSecond?: number) {
+  constructor(private clicksPerSecond?: number) {
     super();
+    this.sampleRate = 1024000;
     this.samplesPerClick = this.getSamplesPerClick();
     this.countedSamples = 0;
   }
 
+  private sampleRate: number;
   private samplesPerClick?: number;
   private countedSamples: number;
 
@@ -49,10 +51,6 @@ export class SampleCounter extends EventTarget implements SampleReceiver {
       return;
     this.countedSamples %= this.samplesPerClick;
     this.dispatchEvent(new SampleClickEvent());
-  }
-
-  andThen(next: SampleReceiver): SampleReceiver {
-    return concatenateReceivers(this, next);
   }
 
   addEventListener(

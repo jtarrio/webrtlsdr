@@ -17,7 +17,7 @@
 import { Float32RingBuffer } from "../dsp/buffers";
 import { makeBlackmanWindow } from "../dsp/coefficients";
 import { FFT } from "../dsp/fft";
-import { concatenateReceivers, SampleReceiver } from "../radio/sample_receiver";
+import { SampleReceiver } from "../radio";
 
 /** A sample receiver that computes the received signal's spectrum. */
 export class Spectrum implements SampleReceiver {
@@ -60,10 +60,6 @@ export class Spectrum implements SampleReceiver {
     this.Q.store(Q);
     this.lastFrequency = frequency;
     this.dirty = true;
-  }
-
-  andThen(next: SampleReceiver): SampleReceiver {
-    return concatenateReceivers(this, next);
   }
 
   frequency(): number | undefined {

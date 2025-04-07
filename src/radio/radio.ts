@@ -55,10 +55,10 @@ export class Radio extends EventTarget {
   /** @param sampleReceiver the object that will receive the radio samples. */
   constructor(
     private rtlProvider: RtlDeviceProvider,
-    private sampleReceiver: SampleReceiver,
-    private sampleRate: number
+    private sampleReceiver: SampleReceiver
   ) {
     super();
+    this.sampleRate = 1024000;
     this.state = State.OFF;
     this.channel = new Channel<Message>();
     this.frequencyCorrection = 0;
@@ -69,6 +69,8 @@ export class Radio extends EventTarget {
     this.runLoop();
   }
 
+  /** Current sample rate. */
+  private sampleRate: number;
   /** Current state. */
   private state: State;
   /** Channel to send messages to the state machine. */

@@ -19,35 +19,32 @@ export interface SampleReceiver {
 
   /** Receives samples that should be demodulated. */
   receiveSamples(I: Float32Array, Q: Float32Array, frequency: number): void;
-
-  /** Sets a sample receiver to be executed right after this one. */
-  andThen(next: SampleReceiver): SampleReceiver;
 }
 
 /**
- * A function that returns a sample receiver that executes the given receivers in sequence.
- * Use it in your implementation of SampleReceiver.andThen.
+ * A "composite" sample receiver that executes its component receivers in sequence.
  */
-export function concatenateReceivers(
-  prev: SampleReceiver,
-  next: SampleReceiver
-): SampleReceiver {
-  let list = [];
-  if (prev instanceof ReceiverSequence) {
-    list.push(...prev.receivers);
-  } else {
-    list.push(prev);
+export class CompositeReceiver implements SampleReceiver {
+  /** Creates a ReceiverSequence out of the given SampleReceivers. */
+  static of(first: SampleReceiver, ...rest: SampleReceiver[]): SampleReceiver {
+    let list: SampleReceiver[] = [];
+    if (first instanceof CompositeReceiver) {
+      list.push(...first.receivers);
+    } else {
+      list.push(first);
+    }
+    for (let next of rest) {
+      if (next instanceof CompositeReceiver) {
+        list.push(...next.receivers);
+      } else {
+        list.push(next);
+      }
+    }
+    if (list.length == 1) return list[0];
+    return new CompositeReceiver(list);
   }
-  if (next instanceof ReceiverSequence) {
-    list.push(...next.receivers);
-  } else {
-    list.push(next);
-  }
-  return new ReceiverSequence(list);
-}
 
-class ReceiverSequence implements SampleReceiver {
-  constructor(public receivers: SampleReceiver[]) {}
+  private constructor(public receivers: SampleReceiver[]) {}
 
   setSampleRate(sampleRate: number): void {
     for (let receiver of this.receivers) {
@@ -59,9 +56,5 @@ class ReceiverSequence implements SampleReceiver {
     for (let receiver of this.receivers) {
       receiver.receiveSamples(I, Q, frequency);
     }
-  }
-
-  andThen(next: SampleReceiver): SampleReceiver {
-    return concatenateReceivers(this, next);
   }
 }

@@ -1,8 +1,8 @@
 import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator";
 import {
   getMode,
-  getParameters,
   getSchemes,
+  modeParameters,
 } from "@jtarrio/webrtlsdr/demod/modes";
 import { Radio } from "@jtarrio/webrtlsdr/radio";
 import { DirectSampling, RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr";
@@ -14,9 +14,8 @@ var knownModes = {};
 
 async function main() {
   // Create the demodulator and radio and connect them.
-  const sampleRate = 1024000;
-  demodulator = new Demodulator(sampleRate);
-  radio = new Radio(new RTL2832U_Provider(), demodulator, sampleRate);
+  demodulator = new Demodulator();
+  radio = new Radio(new RTL2832U_Provider(), demodulator);
 
   // Set the radio and demodulator parameters.
   radio.setFrequency(88500000);
@@ -108,7 +107,7 @@ function onSchemeSelectChange() {
   for (let option of elements.schemeSelect.options) {
     option.selected = option.value == mode.scheme;
   }
-  let modeParams = getParameters(mode);
+  let modeParams = modeParameters(mode);
   elements.bandwidthInput.disabled = !modeParams.hasBandwidth();
   elements.bandwidthInput.value = String(modeParams.getBandwidth());
   elements.squelchInput.disabled = !modeParams.hasSquelch();
@@ -117,7 +116,7 @@ function onSchemeSelectChange() {
 }
 
 function onBandwidthInputChange() {
-  let modeParams = getParameters(demodulator.getMode());
+  let modeParams = modeParameters(demodulator.getMode());
   setNumberInput(
     elements.bandwidthInput,
     () => modeParams.getBandwidth(),
@@ -126,7 +125,7 @@ function onBandwidthInputChange() {
 }
 
 function onSquelchInputChange() {
-  let modeParams = getParameters(demodulator.getMode());
+  let modeParams = modeParameters(demodulator.getMode());
   setNumberInput(
     elements.squelchInput,
     () => modeParams.getSquelch(),
@@ -135,7 +134,7 @@ function onSquelchInputChange() {
 }
 
 function onStereoBoxChange() {
-  let modeParams = getParameters(demodulator.getMode());
+  let modeParams = modeParameters(demodulator.getMode());
   let checked = elements.stereoBox.checked;
   demodulator.setMode(modeParams.setStereo(checked).mode);
 }
@@ -157,7 +156,7 @@ function onRadio(e) {
   elements.logArea.value = msg + "\n" + elements.logArea.value;
   if (e.detail.type == "started" || e.detail.type == "stopped") {
     elements.playButton.disabled = radio.isPlaying();
-    elements.stopButton.disabled = !radio.isPlaying();  
+    elements.stopButton.disabled = !radio.isPlaying();
   }
 }
 
@@ -211,7 +210,7 @@ function preparePage() {
   for (let option of elements.schemeSelect.options) {
     option.selected = option.value == mode.scheme;
   }
-  let modeParams = getParameters(mode);
+  let modeParams = modeParameters(mode);
   elements.bandwidthInput.disabled = !modeParams.hasBandwidth();
   elements.bandwidthInput.value = String(modeParams.getBandwidth());
   elements.squelchInput.disabled = !modeParams.hasSquelch();

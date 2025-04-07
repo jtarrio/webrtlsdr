@@ -31,12 +31,13 @@ import { SchemeNBFM } from "./scheme-nbfm";
 import { SchemeSSB } from "./scheme-ssb";
 import { SchemeWBFM } from "./scheme-wbfm";
 import { Player } from "../audio/player";
-import { concatenateReceivers, SampleReceiver } from "../radio/sample_receiver";
+import { SampleReceiver } from "../radio";
 
 /** The demodulator class. */
 export class Demodulator extends EventTarget implements SampleReceiver {
-  constructor(private inRate: number) {
+  constructor() {
     super();
+    this.inRate = 1024000;
     this.player = new Player();
     this.squelchControl = new SquelchControl(this.player.sampleRate);
     this.mode = { scheme: "WBFM", stereo: true };
@@ -45,6 +46,8 @@ export class Demodulator extends EventTarget implements SampleReceiver {
     this.latestStereo = false;
   }
 
+  /** The sample rate. */
+  private inRate: number;
   /** The audio output device. */
   private player: Player;
   /** Controller that silences the output if the SNR is low. */
@@ -142,10 +145,6 @@ export class Demodulator extends EventTarget implements SampleReceiver {
       this.dispatchEvent(new StereoStatusEvent(stereo));
       this.latestStereo = stereo;
     }
-  }
-
-  andThen(next: SampleReceiver): SampleReceiver {
-    return concatenateReceivers(this, next);
   }
 
   addEventListener(

@@ -22,7 +22,9 @@ You can install Web RTL-SDR using NPM:
 npm install @jtarrio/webrtlsdr
 ```
 
-## Next steps
+## Using Web RTL-SDR
+
+You can use the low-level API if you need to access the RTL-SDR stick directly, or the high-level API if you want to demodulate a stream of samples.
 
 - Accessing the RTL-SDR stick through the [low-level API](lowlevel.md)
 - Creating a radio demodulator through the [high-level API](highlevel.md)

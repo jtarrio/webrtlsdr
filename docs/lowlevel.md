@@ -71,7 +71,7 @@ The `RtlDevice` object returned by `RTL2832U_Provider` has multiple methods that
 
 ### Sample rate
 
-The sample rate is the number of samples (I/Q value pairs) the device will capture per second. Most devices seem to work with sample rates between 1,024,000 and 2,880,000. Some devices can be set to 250,000 samples per second, but with strong aliasing problems.
+The sample rate is the number of samples (I/Q value pairs) the device will capture per second. Most devices seem to work with sample rates between 960,000 and 2,880,000. Some devices can be set to 250,000 samples per second, but with strong aliasing problems.
 
 Due to the Nyquist Theorem, the sample rate also determines the bandwidth of the signal the RTL-SDR device can capture at once: 1 sample per second corresponds to 1 Hertz of bandwidth. Therefore, if you want to increase the bandwidth, you also need to increase the sample rate; if you want to decrease the sample rate, you will also decrease the bandwidth.
 

@@ -82,9 +82,9 @@ export function getMode(scheme: Scheme): Mode {
 }
 
 /** Returns accessors for the mode's or scheme's parameters. */
-export function getParameters(mode: Mode): ModeParameters;
-export function getParameters(scheme: Scheme): SchemeParameters;
-export function getParameters(
+export function modeParameters(mode: Mode): ModeParameters;
+export function modeParameters(scheme: Scheme): SchemeParameters;
+export function modeParameters(
   mode: Mode | Scheme
 ): ModeParameters | SchemeParameters {
   if (typeof mode === "string") return new SchemeParameters(mode);
@@ -182,7 +182,7 @@ export class SchemeParameters {
   }
 
   setStereo(stereo: boolean): ModeParameters {
-    return getParameters(getMode(this.scheme)).setStereo(stereo);
+    return modeParameters(getMode(this.scheme)).setStereo(stereo);
   }
 
   hasBandwidth(): boolean {
@@ -190,7 +190,7 @@ export class SchemeParameters {
   }
 
   setBandwidth(bandwidth: number): ModeParameters {
-    return getParameters(getMode(this.scheme)).setBandwidth(bandwidth);
+    return modeParameters(getMode(this.scheme)).setBandwidth(bandwidth);
   }
 
   hasSquelch(): boolean {
@@ -198,6 +198,6 @@ export class SchemeParameters {
   }
 
   setSquelch(squelch: number): ModeParameters {
-    return getParameters(getMode(this.scheme)).setSquelch(squelch);
+    return modeParameters(getMode(this.scheme)).setSquelch(squelch);
   }
 }

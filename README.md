@@ -14,6 +14,8 @@ This library powers Radio Receiver, my browser-based SDR application, which you 
 
 Web RTL-SDR was written to work with an RTL-2832U-based DVB-T (European digital TV) USB receiver, with a R820/828/860 tuner chip. Support for other chips may be added as required.
 
+Web RTL-SDR uses the WebUSB API, which is only available in Chromium-based browsers (Chrome, Edge, Opera) on computers and Android devices.
+
 ## How to install
 
 ```shell
@@ -37,9 +39,8 @@ import { getMode } from "@jtarrio/webrtlsdr/demod/modes";
 import { Radio } from "@jtarrio/webrtlsdr/radio";
 import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr";
 
-const sampleRate = 1024000;
-let demodulator = new Demodulator(sampleRate);
-let radio = new Radio(new RTL2832U_Provider(), demodulator, sampleRate);
+let demodulator = new Demodulator();
+let radio = new Radio(new RTL2832U_Provider(), demodulator);
 
 radio.setFrequency(88500000);
 demodulator.setVolume(1);
