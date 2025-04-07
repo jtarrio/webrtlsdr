@@ -64,6 +64,30 @@ radio.start();
 setTimeout(() => radio.stop(), 5000);
 ```
 
+### Events
+
+The `Radio` class can dispatch `radio` events. Those events have a `detail` property that contains an object with a property named `type`, which can have one of the following values:
+
+- `starting`: dispatched when the radio starts playing;
+- `stopping`: dispatched when the radio stops playing;
+- `directSampling`: dispatched when the radio enters or leaves direct sampling mode. The `active` property contains whether direct sampling mode is active;
+- `error`: dispatched when the radio fails because of an error. The `exception` property contains the exception that caused the error, if any.
+
+```typescript
+radio.addEventListener("radio", onRadio);
+
+function onRadio(e) {
+  if (e.detail.type == "started") console.log("Radio started");
+  if (e.detail.type == "stopped") console.log("Radio stopped");
+  if (e.detail.type == "directSampling")
+    console.log(
+      e.detail.active ? "Radio is direct sampling" : "Radio is tuner sampling"
+    );
+  if (e.detail.type == "error")
+    console.log("Radio returned an error:", e.detail.exception);
+}
+```
+
 ### Set the parameters
 
 The `Radio` object has multiple methods that let you change the radio parameters and also see their current values. You can call those methods whether the radio is currently playing or not.
@@ -153,7 +177,7 @@ By default, the radio uses automatic gain control.
 
 Most RTL-SDR devices can only receive signals from 29 MHz to 1700 MHz. Some devices, however, have a modification that allows "direct sampling". In direct sampling mode, the tuner circuit is bypassed and the digitizer receives the signals directly; this lets the device receive signals below 29 MHz. Depending on how the modification was made, the bypassed signals are received through the `I` channel or the `Q` channel.
 
-If you want to use direct sampling, you only need to specify the method. You don't need to enable or disable it depending on the frequency; Web RTL-SDR will activate it automatically for frequencies below 29 MHz only.
+If you want to use direct sampling, you only need to specify the method. You don't need to enable or disable it depending on the frequency; Web RTL-SDR will activate it automatically for frequencies below 29 MHz only. When the radio starts or stops using direct sampling, it will send a `radio` event with `directSampling` type.
 
 You can enable direct sampling mode and specify the channel through the `setDirectSamplingMethod()` method.
 
@@ -314,6 +338,22 @@ The `Demodulator`'s constructor doesn't take any arguments.
 ```typescript
 let demodulator = new Demodulator();
 let radio = new Radio(new RTL2832U_Provider(), demodulator);
+```
+
+### Events
+
+The `Demodulator` class can dispatch `stereo-status` events. Those events have a `detail` property that contains a boolean value that indicates if the current signal is in stereo or not. This event is dispatched whenever the signal switches from stereo to mono or vice versa.
+
+```typescript
+demodulator.addEventListener("stereo-status", onStereoStatus);
+
+function onStereoStatus(e) {
+  if (e.detail) {
+    console.log("The signal is now stereo");
+  } else {
+    console.log("The signal is now mono");
+  }
+}
 ```
 
 ### Set the parameters
