@@ -265,7 +265,7 @@ class PowerLogger implements SampleReceiver {
     for (let i = 0; i < I.length; ++i) {
       power += I[i] * I[i] + Q[i] * Q[i];
     }
-    let dB = 10 * Math.log10(power / (u8Samples.length / 2));
+    let dB = 10 * Math.log10(power / I.length);
     console.log("Power:", dB);
   }
 }
