@@ -20,16 +20,16 @@ import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr";
 
 ## Connect to the RTL-SDR stick
 
-Call the `get()` method in the `RTL2832U_Provider` class to connect to the RTL-SDR device. This method returns a promise that resolves to a `RtlDevice`.
+Call the `get()` method in the `RTL2832U_Provider` class to connect to the RTL-SDR device. This method returns a promise that resolves to an `RtlDevice`.
 
 > [!NOTE]
-> You can only connect to a RTL-SDR device in a [secure context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts). This means that your webpage must be served over HTTPS or hosted on `localhost`.
+> You can only connect to an RTL-SDR device in a [secure context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts). This means that your webpage must be served over HTTPS or hosted on `localhost`.
 >
-> You can only connect to a RTL-SDR device in response to a user interaction. This means that you cannot open the RTL-SDR device when the page is opened or automatically in other ways; the user must have clicked a button or pressed a key or interacted with the webpage right before you try to connect to the RTL-SDR device.
+> You can only connect to an RTL-SDR device in response to a user interaction. This means that you cannot open the RTL-SDR device when the page is opened or automatically in other ways; the user must have clicked a button, pressed a key, or interacted with the webpage right before you try to connect to the RTL-SDR device.
 
 When you call `get()`, the user sees a dialog box that asks which RTL-SDR device to connect to. Once the user confirms their choice, the promise returned by `get()` resolves to a `RtlDevice` object that is connected to the RTL-SDR device. If the user cancels, the promise resolves to an exception.
 
-You can close the connection to the RTL-SDR device calling the `RtlDevice` object's `close()` async method.
+You can close the connection to the RTL-SDR device by calling the `RtlDevice` object's `close()` async method.
 
 The `RTL2832U_Provider` class manages the USB connection. If you are going to open and close the RTL-SDR device multiple times, reuse the same `RTL2832U_Provider` object; otherwise, the user will get a confirmation dialog every time you try to open the RTL-SDR device.
 
@@ -100,9 +100,9 @@ console.log("Current frequency:", device.getCenterFrequency());
 
 ### Frequency correction factor
 
-RTL-SDR devices use a crystal oscillator to generate their internal reference signals. Due to manufacturing tolerances and other considerations, most oscillators run at a slightly different frequency than nominal, which makes RTL-SDR devices tune a little bit off-frequency.
+RTL-SDR devices use a crystal oscillator to generate their internal reference signals. Due to manufacturing tolerances and other considerations, most oscillators run at a slightly different frequency than nominal, which makes RTL-SDR devices tune a little off-frequency.
 
-You can set a "frequency correction factor" that makes the RTL-SDR device tune slightly up or down to compensate for the inaccuracy in its crystal. This factor is expressed in "parts per million", and you can set it with the `setFrequencyCorrection()` async method.
+You can set a "frequency correction factor" that makes the RTL-SDR device tune slightly up or down to compensate for the inaccuracy in its crystal. This factor is expressed in "parts per million," and you can set it with the `setFrequencyCorrection()` async method.
 
 ```typescript
 await device.setFrequencyCorrection(ppm);
@@ -137,7 +137,7 @@ console.log("Gain:", gain === null ? "auto" : gain);
 
 ### Direct sampling
 
-Most RTL-SDR devices can only receive signals from 29 MHz to 1700 MHz. Some devices, however, have a modification that allows "direct sampling". In direct sampling mode, the tuner circuit is bypassed and the digitizer receives the signals directly; this lets the device receive signals below 29 MHz. Depending on how the modification was made, the bypassed signals are received through the `I` channel or the `Q` channel.
+Most RTL-SDR devices can only receive signals from 29 MHz to 1700 MHz. Some devices, however, have a modification that allows "direct sampling." In direct sampling mode, the tuner circuit is bypassed, and the digitizer receives the signals directly; this lets the device receive signals below 29 MHz. Depending on how the modification was made, the bypassed signals are received through the `I` channel or the `Q` channel.
 
 If you want to use direct sampling, you only need to specify the method. You don't need to enable or disable it depending on the frequency; Web RTL-SDR will activate it automatically for frequencies below 29 MHz only.
 
@@ -160,7 +160,7 @@ console.log("Direct sampling:", device.getDirectSamplingMethod());
 
 ### Bias T
 
-Some RTL-SDR devices have a special circuit, called a "bias T", that can provide power to an external device through the antenna connector.
+Some RTL-SDR devices have a special circuit, called a "bias T," that can provide power to an external device through the antenna connector.
 
 You can turn the bias T on and off through the `enableBiasTee()` async method.
 
@@ -176,7 +176,7 @@ console.log("Bias T:", device.isBiasTeeEnabled());
 
 ## Receive samples from the RTL-SDR device
 
-Before you start reading samples from the device, you need to reset its buffer calling the `resetBuffer()` async method.
+Before you start reading samples from the device, you need to reset its buffer by calling the `resetBuffer()` async method.
 
 After resetting the buffer, call the `readSamples()` async method to get a block of samples. The argument to `readSamples()` is the number of samples to read, which should be a multiple of 512.
 
@@ -187,7 +187,7 @@ let samples = await device.readSamples(65536);
 
 The `readSamples()` async method returns a `SampleBlock` object with three fields:
 
-- `frequency`, which is the RTL-SDR devices's center frequency when the samples were read;
+- `frequency`, which is the RTL-SDR device's center frequency when the samples were read;
 - `data`, which contains an `ArrayBuffer` with the samples and is described below;
 - `directSampling`, a boolean that indicates if direct sampling was active when the samples were read.
 
@@ -208,7 +208,7 @@ for (let i = 0; i < len; ++i) {
 
 ### Read samples continuously
 
-The previous section explains how to read a block of samples. If you want to read samples continously, you still use the `readSamples()` async method, but in a different way: you should always have at least two calls to `readSamples()` in flight.
+The previous section explains how to read a block of samples. If you want to read samples continuously, you still use the `readSamples()` async method, but in a different way: you should always have at least two calls to `readSamples()` in flight.
 
 As you know, `readSamples()` is an async method. This means that, immediately after being called, it returns a `Promise` that will eventually resolve to a `SampleBlock` object.
 
@@ -216,7 +216,7 @@ If you call `readSamples()` twice, one of the methods will be reading from the d
 
 At this point, the promise should have a `then()` function that processes the content of the resolve `SampleBlock`. The first thing this function should do is call `readSamples()` again. This will ensure that there are always enough calls to `readSamples()` waiting to read from the RTL-SDR device.
 
-This example shows one way to do this.
+This example shows one way to do this:
 
 ```typescript
 // Set this to false when you want to stop reading from the RTL-SDR device.
@@ -248,7 +248,7 @@ await device.close();
 
 After calling `close()`, the variable holding the `RtlDevice` is no longer valid, so you should discard it.
 
-If you want to reopen the device, you must call the `get()` method in the `RTL2832U_Provider` class. If you are reusing a previous provider object, the method will return a connection to the same RTL-SDR device as before and the user won't be asked to confirm. If you are using a new provider, the user will be asked which RTL-SDR device to connect to.
+To reopen the device, call the `get()` method in the same `RTL2832U_Provider` object you used before. By reusing a provider, the method will return a connection to the same RTL-SDR device as before, and the user won't be asked to confirm. If you use a new provider, the user will be asked which RTL-SDR device to connect to.
 
 ## Example
 

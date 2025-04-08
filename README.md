@@ -6,13 +6,13 @@ Access RTL-SDR devices and receive and demodulate radio signals from your web ap
 
 This is a library that provides functions to access and operate an RTL-SDR device from a web application, receive radio signals, demodulate them, and play it through the computer's speakers or headphones.
 
-It provides access at several levels, from low-level operations on the RTL-SDR stick itself, to a full reception/demodulation pipeline.
+It provides access at several levels, from low-level operations on the RTL-SDR stick itself to a full reception/demodulation pipeline.
 
 This library powers Radio Receiver, my browser-based SDR application, which you can try at [radio.ea1iti.es](https://radio.ea1iti.es).
 
 ## Compatible hardware and software
 
-Web RTL-SDR was written to work with an RTL-2832U-based DVB-T (European digital TV) USB receiver, with a R820/828/860 tuner chip. Support for other chips may be added as required.
+Web RTL-SDR was written to work with an RTL-2832U-based DVB-T (European digital TV) USB receiver with a R820/828/860 tuner chip. Support for other chips may be added as required.
 
 Web RTL-SDR uses the WebUSB API, which is only available in Chromium-based browsers (Chrome, Edge, Opera) on computers and Android devices.
 
@@ -24,7 +24,7 @@ npm install @jtarrio/webrtlsdr
 
 ## How to use
 
-See [the `docs` directory](docs/README.md) for the documentation or check out the following examples.
+See [the `docs` directory](docs/README.md) for the documentation, or check out the following examples.
 
 ### High-level access to RTL-SDR (demodulate and play through the computer's speakers)
 

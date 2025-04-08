@@ -1,10 +1,10 @@
 # Web RTL-SDR High-level API
 
-The high-level API lets you operate a multi-mode radio receiver in few lines of code.
+The high-level API lets you operate a multimode radio receiver in not many lines of code.
 
-This API comprises two parts: the `Radio`, which receives commands from your program, controls the RTL-SDR device, and generates a stream of samples; and the `SampleReceiver`, which receives the sample stream and operates on it.
+This API provides a `Radio` class, which receives commands from your program, controls the RTL-SDR device, and generates a stream of samples; and a `SampleReceiver` interface, which receives the sample stream and operates on it.
 
-The API also provides a `Demodulator`, which is a `SampleReceiver` that can demodulate FM, AM, SSB, and CW signals, and play them on the speakers or headphones using the Web Audio API.
+The API also provides a `Demodulator`, which is a `SampleReceiver` that can demodulate FM, AM, SSB, and CW signals and play them on the speakers or headphones using the Web Audio API.
 
 ## The `Radio` class
 
@@ -23,7 +23,7 @@ The constructor for the `Radio` class takes two arguments: an `RtlDeviceProvider
 
 #### Example
 
-We need a `SampleReceiver` to create the `Radio`, so for this example, we'll create one that logs the number of samples that were received in each block. (There will be a full explanation of the `SampleReceiver` interface later.)
+We need a `SampleReceiver` object to create the `Radio`, so for this example, we'll create one that logs the number of samples that were received in each block. (There will be a full explanation of the `SampleReceiver` interface later.)
 
 ```typescript
 class MyReceiver {
@@ -45,7 +45,7 @@ Use the `isPlaying()` method to get the current state.
 
 Note that the `start()` and `stop()` methods may return before the radio is started or stopped. Therefore, if you call `isPlaying()` right after `start()` or `stop()`, you will get the "wrong" result.
 
-You can get notifications when the radio starts and stops playing; to do that, liste on the `radio` event.
+You can get notifications when the radio starts and stops playing; to do that, listen for the `radio` event.
 
 #### Example
 
@@ -134,9 +134,9 @@ By default, the radio is tuned to 88.5 MHz.
 
 #### Frequency correction factor
 
-RTL-SDR devices use a crystal oscillator to generate their internal reference signals. Due to manufacturing tolerances and other considerations, most oscillators run at a slightly different frequency than nominal, which makes RTL-SDR devices tune a little bit off-frequency.
+RTL-SDR devices use a crystal oscillator to generate their internal reference signals. Due to manufacturing tolerances and other considerations, most oscillators run at a slightly different frequency than nominal, which makes RTL-SDR devices tune a little off-frequency.
 
-You can set a "frequency correction factor" that makes the radio tune slightly up or down to compensate for the inaccuracy in its crystal. This factor is expressed in "parts per million", and you can set it with the `setFrequencyCorrection()` method.
+You can set a "frequency correction factor" that makes the radio tune slightly up or down to compensate for the inaccuracy in its crystal. This factor is expressed in "parts per million," and you can set it with the `setFrequencyCorrection()` method.
 
 ```typescript
 radio.setFrequencyCorrection(ppm);
@@ -175,7 +175,7 @@ By default, the radio uses automatic gain control.
 
 #### Direct sampling
 
-Most RTL-SDR devices can only receive signals from 29 MHz to 1700 MHz. Some devices, however, have a modification that allows "direct sampling". In direct sampling mode, the tuner circuit is bypassed and the digitizer receives the signals directly; this lets the device receive signals below 29 MHz. Depending on how the modification was made, the bypassed signals are received through the `I` channel or the `Q` channel.
+Most RTL-SDR devices can only receive signals from 29 MHz to 1700 MHz. Some devices, however, have a modification that allows "direct sampling." In direct sampling mode, the tuner circuit is bypassed, and the digitizer receives the signals directly; this lets the device receive signals below 29 MHz. Depending on how the modification was made, the bypassed signals are received through the `I` channel or the `Q` channel.
 
 If you want to use direct sampling, you only need to specify the method. You don't need to enable or disable it depending on the frequency; Web RTL-SDR will activate it automatically for frequencies below 29 MHz only. When the radio starts or stops using direct sampling, it will send a `radio` event with `directSampling` type.
 
@@ -200,7 +200,7 @@ By default, direct sampling is disabled.
 
 #### Bias T
 
-Some RTL-SDR devices have a special circuit, called a "bias T", that can provide power to an external device through the antenna connector.
+Some RTL-SDR devices have a special circuit, called a "bias T," that can provide power to an external device through the antenna connector.
 
 You can turn the bias T on and off through the `enableBiasTee()` method.
 
@@ -220,6 +220,8 @@ By default, the bias T is off.
 
 When the `Radio` is playing, it receives a stream of samples from an RTL-SDR device and provides it to a `SampleReceiver` object by calling its `receiveSamples()` method repeatedly.
 
+You can create your own `SampleReceiver` object by implementing this interface.
+
 ### Imports
 
 You don't need to import anything if you use JavaScript. If you use TypeScript, you should import the `SampleReceiver` type:
@@ -230,19 +232,19 @@ import { SampleReceiver } from "@jtarrio/webrtlsdr/radio";
 
 ### Method `setSampleRate()`
 
-The `setSampleRate()` method is called by the `Radio` whenever a stream starts or the radio's sample rate is changed. It takes a single parameter:
+The `setSampleRate()` method is called by the `Radio` object whenever a stream starts or the radio's sample rate is changed. It takes a single parameter:
 
-- `sampleRate` (`number`): the new sample rate, as the number of samples per second.
+- `sampleRate` (`number`): the new sample rate as the number of samples per second.
 
 ### Method `receiveSamples()`
 
-The `receiveSamples()` method is called by the `Radio` whenever there is a new block of samples. It takes three parameters:
+The `receiveSamples()` method is called by the `Radio` object whenever there is a new block of samples. It takes three parameters:
 
 - `I` (`Float32Array`): the successive values of the samples' I components.
 - `Q` (`Float32Array`): the successive values of the samples' Q components.
 - `frequency` (`number`): the frequency that the RTL-SDR device was tuned to when it received this block of samples.
 
-The `I` and `Q` arrays have the same number of elements, and each element of `I`, together with the element of `Q` with the same index, form one I/Q sample.
+The `I` and `Q` arrays have the same number of elements, and each element of `I`, together with the element of `Q` with the same index, forms one I/Q sample.
 
 ### Example
 
@@ -271,11 +273,11 @@ class PowerLogger implements SampleReceiver {
 
 ## The `Demodulator` class
 
-Web RTL-SDR provides a `Demodulator` class, which is a `SampleReceiver` implementation that can demodulate FM, AM, SSB, and CW signals, and play them on the speakers or headphones using the Web Audio API.
+Web RTL-SDR provides a `Demodulator` class, which is a `SampleReceiver` implementation that can demodulate FM, AM, SSB, and CW signals and play them on the speakers or headphones using the Web Audio API.
 
 ### Modes
 
-The `Demodulator` uses `Mode` objects, which contain the parameters that define a modulation scheme. You can use the following functions to create and modify `Mode` objects:
+The `Demodulator` supports multiple modulation schemes that are defined using `Mode` objects. You can use the following functions to create and modify `Mode` objects:
 
 ```typescript
 import {
@@ -285,13 +287,9 @@ import {
 } from "@jtarrio/webrtlsdr/demod/modes";
 ```
 
+The `getSchemes()` function returns the names of all available modulation schemes (WBFM, NBFM, AM, USB, LSB, and CW).
+
 The `getMode()` function returns a `Mode` object with the default parameters for a given modulation scheme name.
-
-```typescript
-let mode = getMode("WBFM");
-```
-
-The `getSchemes()` function returns the names of all known modulation schemes.
 
 ```typescript
 let modes = {};
@@ -300,7 +298,7 @@ for (let name of getSchemes()) {
 }
 ```
 
-The `modeParameters()` function provides a uniform mechanism to get and set the parameters of a `Mode` object. The properties of a `Mode` object are different depending on its scheme, so you would need to write different code to modify different modes; with the `modeParameters()` function you can use the same code to modify the parameters for any known mode.
+The properties of a `Mode` object vary depending on the modulation scheme, so to modify them, you would need to write different code for each mode. The `modeParameters()` function provides a uniform mechanism to get and set the parameters of a `Mode` object so that you can change them all using the same code.
 
 The `modeParameters()` function takes a mode or a scheme name and returns an object with three methods for each parameter:
 
@@ -310,11 +308,18 @@ The `modeParameters()` function takes a mode or a scheme name and returns an obj
 
 The parameters are:
 
-- Bandwidth (`hasBandwidth()`/`getBandwidth()`/`setBandwidth()`): corresponds to the bandwidth in AM, SSB, and CW, and to double the maximum deviation in NBFM. Not adjustable in WBFM, where it always has the value `150000`.
-- Stereo (`hasStereo()`/`getStereo()`/`setStereo()`): whether stereo is enabled. Only available in WBFM; in other modes, it always is `false`.
-- Squelch (`hasSquelch()`/`getSquelch()`/`setSquelch()`): the squelch level. Not available in WBFM and CW, where it always has value `0`.
+- Bandwidth (`hasBandwidth()`/`getBandwidth()`/`setBandwidth()`):
+  - for AM, SSB, and CW, it corresponds to the bandwidth;
+  - for NBFM, it contains twice the maximum deviation (so, if the maximum deviation is 5 kHz, the bandwidth appears as 10 kHz);
+  - not available for WBFM, where it always appears as the value `150000`.
+- Stereo (`hasStereo()`/`getStereo()`/`setStereo()`)
+  - for WBFM, whether stereo decoding is enabled;
+  - not available for other modes, where it always appears as the `false` value.
+- Squelch (`hasSquelch()`/`getSquelch()`/`setSquelch()`)
+  - for NBFM, AM, and SSB, the squelch level;
+  - not available for WBFM and CW, where it always appears as the value `0`.
 
-The modified mode is available as the `mode` property.
+You can retrieve the mode with the altered parameters by accessing the `mode` property.
 
 ```typescript
 let params = modeParameters(mode);
@@ -342,7 +347,7 @@ let radio = new Radio(new RTL2832U_Provider(), demodulator);
 
 ### Events
 
-The `Demodulator` class can dispatch `stereo-status` events. Those events have a `detail` property that contains a boolean value that indicates if the current signal is in stereo or not. This event is dispatched whenever the signal switches from stereo to mono or vice versa.
+The `Demodulator` class can dispatch `stereo-status` events. Those events have a `detail` property that contains a boolean value that indicates if the current signal is in stereo or not. This event is dispatched whenever the signal switches from stereo to mono, or vice versa.
 
 ```typescript
 demodulator.addEventListener("stereo-status", onStereoStatus);
@@ -362,9 +367,7 @@ The `Demodulator` object has multiple methods that let you change its parameters
 
 #### Mode
 
-The "mode" consists of all the parameters that define the modulation schema used by the transmitter. These parameters are stored in a `Mode` object.
-
-You can set the mode with the `setMode()` method.
+You can set the mode used by the demodulator with the `setMode()` method.
 
 ```typescript
 demodulator.setMode(mode);
@@ -388,7 +391,7 @@ demodulator.setMode(params.mode);
 
 #### Frequency offset
 
-The radio captures a large bandwidth, and signals may be available in any place within this bandwidth. You can tune into any particular frequency within the received bandwidth by changing the "frequency offset". An offset of `0` represents the radio's center frequency; positive and negative offsets are added and subtracted from the center frequency.
+The radio captures a large bandwidth, and signals may be available in any place within this bandwidth. You can tune into any particular frequency within the received bandwidth by changing the "frequency offset." An offset of `0` represents the radio's center frequency; positive and negative offsets are added and subtracted from the center frequency.
 
 For example, if you are tuned on 90.5 MHz and want to demodulate a signal on 90.4 MHz, you would apply an offset of `-100000`.
 
@@ -406,7 +409,9 @@ let offset = demodulator.getFrequencyOffset();
 
 By default, the modulator uses a `0` frequency offset.
 
-Frequency, you will want to change your radio's center frequency and offset at the same time. To achieve this without creating audible glitches, you can use the `expectFrequencyAndSetOffset()` method. After you call this method with a given center frequency, the demodulator will wait to receive samples belonging to that frequency and then it will change the offset to the given value.
+You will frequently want to change your radio's center frequency and offset at the same time. You could try to do this by calling the `Radio.setFrequency()` and `Demodulator.setFrequencyOffset()` methods sequentially, but this will almost always produce audible glitches. To avoid this, call the `Demodulator.expectFrequencyAndSetOffset()` method first, and then call `Radio.setFrequency()`.
+
+The `expectFrequencyAndSetOffset()` method takes two arguments: the new center frequency and the new frequency offset. After calling this function, the demodulator will wait to receive samples belonging to the new center frequency; as soon as they arrive, it will change the offset frequency to the new value.
 
 ```typescript
 let newCenterFrequency = 88.5 * 1e6;
@@ -441,7 +446,7 @@ The high-level API has some additional functionalities that can help you build y
 
 ### Use several sample receivers at once
 
-Sometimes, you may want the `Radio` to send samples to more than one `SampleReceiver`. For example, the [`Radio Receiver`](https://github.com/jtarrio/radioreceiver) application demodulates the radio signals with the `Demodulator` at the same time that it computes their frequency spectrum using another `SampleReceiver`.
+Sometimes you may want the `Radio` to send samples to more than one `SampleReceiver`. For example, the [`Radio Receiver`](https://github.com/jtarrio/radioreceiver) application demodulates the radio signals with the `Demodulator` at the same time that it computes their frequency spectrum using another `SampleReceiver`.
 
 The application achieves this with a `CompositeReceiver`. Every time one of the methods of the `CompositeReceiver` object is called, it will call the same method in every component receiver.
 
@@ -461,7 +466,7 @@ let radio = new Radio(
 
 Use the `SampleCounter` to dispatch an event several times per second. This class is a `SampleReceiver` that counts the number of received samples and triggers an event when appropriate.
 
-The class constructor takes the number of events per second that should be triggered, and you can listen on its `sample-click` event.
+The class constructor takes the number of events per second that should be triggered, and you can listen for its `sample-click` event.
 
 ```typescript
 // Trigger the event 20 times per second
@@ -476,13 +481,11 @@ function onSampleClick() {
 
 ### Compute the frequency spectrum
 
-You can use the `Spectrum` sample receiver to compute the frequency spectrum of your received radio signals.
+You can use the `Spectrum` sample receiver to compute the frequency spectrum of your received radio signals. You can call its `getSpectrum()` method periodically to get the spectrum of the received signals so you can display it on a waterfall, for example. (You can use `SampleCounter` to perform the periodic calls.)
 
-It receives the sample stream and you can call its `getSpectrum()` method periodically to get the spectrum of the latest samples (you can use `SampleCounter` for this.)
+The `Spectrum` class has a `size` property that contains the number of frequency buckets in the spectrum. This size is always a power of 2. You can set it to another value if you wish; if you don't specify a power of 2, it will be set to the next higher power of 2.
 
-The `Spectrum` class has a `size` property that contains the number of frequency buckets in the spectrum. This size is always a power of 2. You can set it to another value if you wish — if you don't specify a power of 2, it will be set to the next higher power of 2.
-
-This class also has a `getSpectrum()` method. This method takes a `Float32Array` that will be populated with the content of the spectrum of the last few received samples. This array should be of the same size returned by the `size` property, but it is not an error if it isn't: only the elements that fit in the array will be populated.
+This class also has a `getSpectrum()` method that takes a `Float32Array` that will be populated with the content of the spectrum of the last few received samples. This array should be of the same size returned by the `size` property, but it is not an error if it isn't: only the elements that fit in the array will be populated.
 
 Each element of the populated array contains the power for that frequency bin in decibels (dB). The first half of the elements contains the positive frequency bins, and the second half contains the negative frequency bins.
 
