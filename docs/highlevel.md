@@ -2,15 +2,15 @@
 
 The high-level API lets you operate a multimode radio receiver in not many lines of code.
 
-This API provides a `Radio` class, which receives commands from your program, controls the RTL-SDR device, and generates a stream of samples; and a `SampleReceiver` interface, which receives the sample stream and operates on it.
+This API provides a [`Radio`](../src/radio/radio.ts) class, which receives commands from your program, controls the RTL-SDR device, and generates a stream of samples; and a [`SampleReceiver`](../src/radio/sample_receiver.ts) interface, which receives the sample stream and operates on it.
 
-The API also provides a `Demodulator`, which is a `SampleReceiver` that can demodulate FM, AM, SSB, and CW signals and play them on the speakers or headphones using the Web Audio API.
+The API also provides a [`Demodulator`](../src/demod/demodulator.ts), which is a [`SampleReceiver`](../src/radio/sample_receiver.ts) that can demodulate FM, AM, SSB, and CW signals and play them on the speakers or headphones using the Web Audio API.
 
 ## The `Radio` class
 
 ### Imports
 
-To use the high-level `Radio` API, import the following modules:
+To use the high-level [`Radio`](../src/radio/radio.ts) API, import the following modules:
 
 ```typescript
 import { Radio } from "@jtarrio/webrtlsdr/radio";
@@ -19,11 +19,11 @@ import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr";
 
 ### Create a `Radio`
 
-The constructor for the `Radio` class takes two arguments: an `RtlDeviceProvider` that returns the RTL-SDR device to use, and a `SampleReceiver` that will get the sample stream.
+The constructor for the [`Radio`](../src/radio/radio.ts) class takes two arguments: an [`RtlDeviceProvider`](../src/rtlsdr/rtldevice.ts) that returns the RTL-SDR device to use, and a [`SampleReceiver`](../src/radio/sample_receiver.ts) that will get the sample stream.
 
 #### Example
 
-We need a `SampleReceiver` object to create the `Radio`, so for this example, we'll create one that logs the number of samples that were received in each block. (There will be a full explanation of the `SampleReceiver` interface later.)
+We need a [`SampleReceiver`](../src/radio/sample_receiver.ts) object to create the [`Radio`](../src/radio/radio.ts), so for this example, we'll create one that logs the number of samples that were received in each block. (There will be a full explanation of the [`SampleReceiver`](../src/radio/sample_receiver.ts) interface later.)
 
 ```typescript
 class MyReceiver {
@@ -39,13 +39,13 @@ let radio = new Radio(new RTL2832U_Provider(), receiver);
 
 ### Start and stop playing
 
-Use the `Radio` object's `start()` and `stop()` methods to start and stop the radio, respectively.
+Use the [`Radio`](../src/radio/radio.ts) object's `start()` and `stop()` methods to start and stop the radio, respectively.
 
 Use the `isPlaying()` method to get the current state.
 
 Note that the `start()` and `stop()` methods may return before the radio is started or stopped. Therefore, if you call `isPlaying()` right after `start()` or `stop()`, you will get the "wrong" result.
 
-You can get notifications when the radio starts and stops playing; to do that, listen for the `radio` event.
+You can get notifications when the radio starts and stops playing; to do that, listen for the [`Radio`](../src/radio/radio.ts) event.
 
 #### Example
 
@@ -66,7 +66,7 @@ setTimeout(() => radio.stop(), 5000);
 
 ### Events
 
-The `Radio` class can dispatch `radio` events. Those events have a `detail` property that contains an object with a property named `type`, which can have one of the following values:
+The [`Radio`](../src/radio/radio.ts) class can dispatch `radio` events. Those events have a `detail` property that contains an object with a property named `type`, which can have one of the following values:
 
 - `starting`: dispatched when the radio starts playing;
 - `stopping`: dispatched when the radio stops playing;
@@ -90,7 +90,7 @@ function onRadio(e) {
 
 ### Set the parameters
 
-The `Radio` object has multiple methods that let you change the radio parameters and also see their current values. You can call those methods whether the radio is currently playing or not.
+The [`Radio`](../src/radio/radio.ts) object has multiple methods that let you change the radio parameters and also see their current values. You can call those methods whether the radio is currently playing or not.
 
 Also, note that the methods that set parameters may return before the radio starts using the new value of the parameter. However, their corresponding methods to get the value will always return the last value you set.
 
@@ -218,13 +218,13 @@ By default, the bias T is off.
 
 ## The `SampleReceiver` interface
 
-When the `Radio` is playing, it receives a stream of samples from an RTL-SDR device and provides it to a `SampleReceiver` object by calling its `receiveSamples()` method repeatedly.
+When the [`Radio`](../src/radio/radio.ts) is playing, it receives a stream of samples from an RTL-SDR device and provides it to a [`SampleReceiver`](../src/radio/sample_receiver.ts) object by calling its `receiveSamples()` method repeatedly.
 
-You can create your own `SampleReceiver` object by implementing this interface.
+You can create your own [`SampleReceiver`](../src/radio/sample_receiver.ts) object by implementing this interface.
 
 ### Imports
 
-You don't need to import anything if you use JavaScript. If you use TypeScript, you should import the `SampleReceiver` type:
+You don't need to import anything if you use JavaScript. If you use TypeScript, you should import the [`SampleReceiver`](../src/radio/sample_receiver.ts) type:
 
 ```typescript
 import { SampleReceiver } from "@jtarrio/webrtlsdr/radio";
@@ -232,13 +232,13 @@ import { SampleReceiver } from "@jtarrio/webrtlsdr/radio";
 
 ### Method `setSampleRate()`
 
-The `setSampleRate()` method is called by the `Radio` object whenever a stream starts or the radio's sample rate is changed. It takes a single parameter:
+The `setSampleRate()` method is called by the [`Radio`](../src/radio/radio.ts) object whenever a stream starts or the radio's sample rate is changed. It takes a single parameter:
 
 - `sampleRate` (`number`): the new sample rate as the number of samples per second.
 
 ### Method `receiveSamples()`
 
-The `receiveSamples()` method is called by the `Radio` object whenever there is a new block of samples. It takes three parameters:
+The `receiveSamples()` method is called by the [`Radio`](../src/radio/radio.ts) object whenever there is a new block of samples. It takes three parameters:
 
 - `I` (`Float32Array`): the successive values of the samples' I components.
 - `Q` (`Float32Array`): the successive values of the samples' Q components.
@@ -273,11 +273,11 @@ class PowerLogger implements SampleReceiver {
 
 ## The `Demodulator` class
 
-Web RTL-SDR provides a `Demodulator` class, which is a `SampleReceiver` implementation that can demodulate FM, AM, SSB, and CW signals and play them on the speakers or headphones using the Web Audio API.
+Web RTL-SDR provides a [`Demodulator`](../src/demod/demodulator.ts) class, which is a [`SampleReceiver`](../src/radio/sample_receiver.ts) implementation that can demodulate FM, AM, SSB, and CW signals. By default, it will play the demodulated audio on the speakers or headphones using the Web Audio API, but if you want to do something else (for example, record it in a file or send it over the network), you can provide your own code to do that.
 
 ### Modes
 
-The `Demodulator` supports multiple modulation schemes that are defined using `Mode` objects. You can use the following functions to create and modify `Mode` objects:
+The [`Demodulator`](../src/demod/demodulator.ts) supports multiple modulation schemes that are defined using [`Mode`](../src/demod/modes.ts) objects. You can use the following functions to create and modify [`Mode`](../src/demod/modes.ts) objects:
 
 ```typescript
 import {
@@ -289,7 +289,7 @@ import {
 
 The `getSchemes()` function returns the names of all available modulation schemes (WBFM, NBFM, AM, USB, LSB, and CW).
 
-The `getMode()` function returns a `Mode` object with the default parameters for a given modulation scheme name.
+The `getMode()` function returns a [`Mode`](../src/demod/modes.ts) object with the default parameters for a given modulation scheme name.
 
 ```typescript
 let modes = {};
@@ -298,7 +298,7 @@ for (let name of getSchemes()) {
 }
 ```
 
-The properties of a `Mode` object vary depending on the modulation scheme, so to modify them, you would need to write different code for each mode. The `modeParameters()` function provides a uniform mechanism to get and set the parameters of a `Mode` object so that you can change them all using the same code.
+The properties of a [`Mode`](../src/demod/modes.ts) object vary depending on the modulation scheme, so to modify them, you would need to write different code for each mode. The `modeParameters()` function provides a uniform mechanism to get and set the parameters of a [`Mode`](../src/demod/modes.ts) object so that you can change them all using the same code.
 
 The `modeParameters()` function takes a mode or a scheme name and returns an object with three methods for each parameter:
 
@@ -336,7 +336,7 @@ let newMode = params.mode;
 import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator";
 ```
 
-The `Demodulator`'s constructor doesn't take any arguments.
+The [`Demodulator`](../src/demod/demodulator.ts)'s constructor doesn't take any arguments.
 
 #### Example
 
@@ -347,7 +347,7 @@ let radio = new Radio(new RTL2832U_Provider(), demodulator);
 
 ### Events
 
-The `Demodulator` class can dispatch `stereo-status` events. Those events have a `detail` property that contains a boolean value that indicates if the current signal is in stereo or not. This event is dispatched whenever the signal switches from stereo to mono, or vice versa.
+The [`Demodulator`](../src/demod/demodulator.ts) class can dispatch `stereo-status` events. Those events have a `detail` property that contains a boolean value that indicates if the current signal is in stereo or not. This event is dispatched whenever the signal switches from stereo to mono, or vice versa.
 
 ```typescript
 demodulator.addEventListener("stereo-status", onStereoStatus);
@@ -363,7 +363,7 @@ function onStereoStatus(e) {
 
 ### Set the parameters
 
-The `Demodulator` object has multiple methods that let you change its parameters and also see their current values. You can call those methods whether the radio is currently playing or not.
+The [`Demodulator`](../src/demod/demodulator.ts) object has multiple methods that let you change its parameters and also see their current values. You can call those methods whether the radio is currently playing or not.
 
 #### Mode
 
@@ -436,9 +436,58 @@ let volume = demodulator.getVolume();
 
 By default, the volume is `0`.
 
-## Example
+### Use a different output for the demodulator
 
-For an example that uses many of the functions, classes, and methods described above, check [`examples/highlevel`](../examples/highlevel/).
+By default, the demodulator sends the demodulated audio to an [`AudioPlayer`](../src/players/audioplayer.ts) class, which will play this audio on your speakers or headphones. If you want to do something different with the audio, you can provide your own implementation of the [`Player`](../src/demod/player.ts) interface and pass it as an argument to the [`Demodulator`](../src/demod/demodulator.ts) constructor.
+
+The [`Player`](../src/demod/player.ts) interface has one property, `sampleRate`, which contains the sample rate that the class expects to receive in its `play()` method.
+
+It also has three methods:
+
+- the `play()` method takes two arguments of type `Float32Array`: one with the samples for the left speaker and another for the right speaker;
+- the `setVolume()` method takes a `number` from 0 to 1 and sets the output volume to that value, where 0 is silent and 1 is full volume;
+- the `getVolume()` method returns the currently set volume.
+
+#### Example
+
+```typescript
+/** This Player sends the audio signals to another server. */
+class NetworkPlayer {
+  constructor(url) {
+    this.url = url;
+    this.volume = 0;
+    this.sequence = 0;
+  }
+
+  get sampleRate() {
+    return 48000;
+  }
+
+  play(left, right) {
+    fetch(url, {
+      method: "POST",
+      body: JSON.stringify({
+        sequence: this.sequence,
+        left: [...left],
+        right: [...right],
+        volume: this.volume,
+      }),
+    });
+    this.sequence += left.length;
+  }
+
+  setVolume(volume) {
+    this.volume = volume;
+  }
+
+  getVolume() {
+    return this.volume;
+  }
+}
+
+let demodulator = new Demodulator(new NetworkPlayer(REMOTE_URL));
+let radio = new Radio(new RTL2832U_Provider(), demodulator);
+```
 
 ## Extra goodies
 
@@ -446,9 +495,9 @@ The high-level API has some additional functionalities that can help you build y
 
 ### Use several sample receivers at once
 
-Sometimes you may want the `Radio` to send samples to more than one `SampleReceiver`. For example, the [`Radio Receiver`](https://github.com/jtarrio/radioreceiver) application demodulates the radio signals with the `Demodulator` at the same time that it computes their frequency spectrum using another `SampleReceiver`.
+Sometimes you may want the [`Radio`](../src/radio/radio.ts) to send samples to more than one [`SampleReceiver`](../src/radio/sample_receiver.ts). For example, the [`Radio Receiver`](https://github.com/jtarrio/radioreceiver) application demodulates the radio signals with the [`Demodulator`](../src/demod/demodulator.ts) at the same time that it computes their frequency spectrum using another [`SampleReceiver`](../src/radio/sample_receiver.ts).
 
-The application achieves this with a `CompositeReceiver`. Every time one of the methods of the `CompositeReceiver` object is called, it will call the same method in every component receiver.
+The application achieves this with a [`CompositeReceiver`](../src/radio/sample_receiver.ts). Every time one of the methods of the [`CompositeReceiver`](../src/radio/sample_receiver.ts) object is called, it will call the same method in every component receiver.
 
 ```typescript
 import { CompositeReceiver } from "@jtarrio/webrtlsdr/radio";
@@ -464,7 +513,7 @@ let radio = new Radio(
 
 ### Trigger periodic events
 
-Use the `SampleCounter` to dispatch an event several times per second. This class is a `SampleReceiver` that counts the number of received samples and triggers an event when appropriate.
+Use the [`SampleCounter`](../src/radio/sample-counter.ts) to dispatch an event several times per second. This class is a [`SampleReceiver`](../src/radio/sample_receiver.ts) that counts the number of received samples and triggers an event when appropriate.
 
 The class constructor takes the number of events per second that should be triggered, and you can listen for its `sample-click` event.
 
@@ -481,9 +530,9 @@ function onSampleClick() {
 
 ### Compute the frequency spectrum
 
-You can use the `Spectrum` sample receiver to compute the frequency spectrum of your received radio signals. You can call its `getSpectrum()` method periodically to get the spectrum of the received signals so you can display it on a waterfall, for example. (You can use `SampleCounter` to perform the periodic calls.)
+You can use the [`Spectrum`](../src/radio/spectrum.ts) sample receiver to compute the frequency spectrum of your received radio signals. You can call its `getSpectrum()` method periodically to get the spectrum of the received signals so you can display it on a waterfall, for example. (You can use [`SampleCounter`](../src/radio/sample-counter.ts) to perform the periodic calls.)
 
-The `Spectrum` class has a `size` property that contains the number of frequency buckets in the spectrum. This size is always a power of 2. You can set it to another value if you wish; if you don't specify a power of 2, it will be set to the next higher power of 2.
+The [`Spectrum`](../src/radio/spectrum.ts) class has a `size` property that contains the number of frequency buckets in the spectrum. This size is always a power of 2. You can set it to another value if you wish; if you don't specify a power of 2, it will be set to the next higher power of 2.
 
 This class also has a `getSpectrum()` method that takes a `Float32Array` that will be populated with the content of the spectrum of the last few received samples. This array should be of the same size returned by the `size` property, but it is not an error if it isn't: only the elements that fit in the array will be populated.
 
@@ -507,3 +556,7 @@ function onSampleClick() {
   /* do something with the spectrum */
 }
 ```
+
+## Example
+
+For an example that uses many of the functions, classes, and methods described above, check [`examples/highlevel`](../examples/highlevel/).

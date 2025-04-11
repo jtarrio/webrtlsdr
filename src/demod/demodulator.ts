@@ -25,20 +25,24 @@
  */
 
 import { ModulationScheme, Mode } from "./modes";
+import { Player } from "./player";
 import { SchemeAM } from "./scheme-am";
 import { SchemeCW } from "./scheme-cw";
 import { SchemeNBFM } from "./scheme-nbfm";
 import { SchemeSSB } from "./scheme-ssb";
 import { SchemeWBFM } from "./scheme-wbfm";
-import { Player } from "../audio/player";
+import { AudioPlayer } from "../players/audioplayer";
 import { SampleReceiver } from "../radio";
 
 /** The demodulator class. */
 export class Demodulator extends EventTarget implements SampleReceiver {
-  constructor() {
+  /**
+   * @param player The player to use. If undefined, an AudioPlayer will be used.
+   */
+  constructor(player?: Player) {
     super();
     this.inRate = 1024000;
-    this.player = new Player();
+    this.player = player ? player : new AudioPlayer();
     this.squelchControl = new SquelchControl(this.player.sampleRate);
     this.mode = { scheme: "WBFM", stereo: true };
     this.scheme = this.getScheme(this.mode);

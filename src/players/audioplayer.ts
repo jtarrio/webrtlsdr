@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/** A class to play a series of sample buffers at a constant rate. */
-export class Player {
+import { Player } from "../demod/player";
+
+/** A class to play a series of sample buffers at a constant rate using the Web Audio API. */
+export class AudioPlayer implements Player {
   private static OUT_RATE = 48000;
   private static TIME_BUFFER = 0.05;
 
@@ -34,25 +36,26 @@ export class Player {
    * @param leftSamples The samples for the left speaker.
    * @param rightSamples The samples for the right speaker.
    */
-  play(
-    leftSamples: Float32Array,
-    rightSamples: Float32Array,
-  ) {
+  play(leftSamples: Float32Array, rightSamples: Float32Array) {
     if (this.ac === undefined || this.gainNode === undefined) {
       this.ac = new AudioContext();
       this.gainNode = this.ac.createGain();
       this.gainNode.gain.value = this.gain;
       this.gainNode.connect(this.ac.destination);
     }
-    const buffer = this.ac.createBuffer(2, leftSamples.length, Player.OUT_RATE);
+    const buffer = this.ac.createBuffer(
+      2,
+      leftSamples.length,
+      AudioPlayer.OUT_RATE
+    );
     buffer.getChannelData(0).set(leftSamples);
     buffer.getChannelData(1).set(rightSamples);
     let source = this.ac.createBufferSource();
     source.buffer = buffer;
     source.connect(this.gainNode);
     this.lastPlayedAt = Math.max(
-      this.lastPlayedAt + leftSamples.length / Player.OUT_RATE,
-      this.ac.currentTime + Player.TIME_BUFFER
+      this.lastPlayedAt + leftSamples.length / AudioPlayer.OUT_RATE,
+      this.ac.currentTime + AudioPlayer.TIME_BUFFER
     );
     source.start(this.lastPlayedAt);
   }

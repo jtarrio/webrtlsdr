@@ -20,18 +20,18 @@ import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr";
 
 ## Connect to the RTL-SDR stick
 
-Call the `get()` method in the `RTL2832U_Provider` class to connect to the RTL-SDR device. This method returns a promise that resolves to an `RtlDevice`.
+Call the `get()` method in the [`RTL2832U_Provider`](../src/rtlsdr/rtl2832u.ts) class to connect to the RTL-SDR device. This method returns a promise that resolves to an [`RtlDevice`](../src/rtlsdr/rtldevice.ts).
 
 > [!NOTE]
 > You can only connect to an RTL-SDR device in a [secure context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts). This means that your webpage must be served over HTTPS or hosted on `localhost`.
 >
 > You can only connect to an RTL-SDR device in response to a user interaction. This means that you cannot open the RTL-SDR device when the page is opened or automatically in other ways; the user must have clicked a button, pressed a key, or interacted with the webpage right before you try to connect to the RTL-SDR device.
 
-When you call `get()`, the user sees a dialog box that asks which RTL-SDR device to connect to. Once the user confirms their choice, the promise returned by `get()` resolves to a `RtlDevice` object that is connected to the RTL-SDR device. If the user cancels, the promise resolves to an exception.
+When you call `get()`, the user sees a dialog box that asks which RTL-SDR device to connect to. Once the user confirms their choice, the promise returned by `get()` resolves to a [`RtlDevice`](../src/rtlsdr/rtldevice.ts) object that is connected to the RTL-SDR device. If the user cancels, the promise resolves to an exception.
 
-You can close the connection to the RTL-SDR device by calling the `RtlDevice` object's `close()` async method.
+You can close the connection to the RTL-SDR device by calling the [`RtlDevice`](../src/rtlsdr/rtldevice.ts) object's `close()` async method.
 
-The `RTL2832U_Provider` class manages the USB connection. If you are going to open and close the RTL-SDR device multiple times, reuse the same `RTL2832U_Provider` object; otherwise, the user will get a confirmation dialog every time you try to open the RTL-SDR device.
+The [`RTL2832U_Provider`](../src/rtlsdr/rtl2832u.ts) class manages the USB connection. If you are going to open and close the RTL-SDR device multiple times, reuse the same [`RTL2832U_Provider`](../src/rtlsdr/rtl2832u.ts) object; otherwise, the user will get a confirmation dialog every time you try to open the RTL-SDR device.
 
 ### Example
 
@@ -63,11 +63,11 @@ async function onStartClick() {
 }
 ```
 
-To see the effect of not reusing the `RTL2832U_Provider` object, remove the `if (!provider)` statement and then click the "Start" button multiple times. The program will ask for confirmation every time.
+To see the effect of not reusing the [`RTL2832U_Provider`](../src/rtlsdr/rtl2832u.ts) object, remove the `if (!provider)` statement and then click the "Start" button multiple times. The program will ask for confirmation every time.
 
 ## Set the RTL-SDR stick parameters
 
-The `RtlDevice` object returned by `RTL2832U_Provider` has multiple methods that let you change the RTL-SDR device's parameters and also see their current values.
+The [`RtlDevice`](../src/rtlsdr/rtldevice.ts) object returned by [`RTL2832U_Provider`](../src/rtlsdr/rtl2832u.ts) has multiple methods that let you change the RTL-SDR device's parameters and also see their current values.
 
 ### Sample rate
 
@@ -246,9 +246,9 @@ Call the `close()` async method to stop the RTL-SDR device and release its resou
 await device.close();
 ```
 
-After calling `close()`, the variable holding the `RtlDevice` is no longer valid, so you should discard it.
+After calling `close()`, the variable holding the [`RtlDevice`](../src/rtlsdr/rtldevice.ts) is no longer valid, so you should discard it.
 
-To reopen the device, call the `get()` method in the same `RTL2832U_Provider` object you used before. By reusing a provider, the method will return a connection to the same RTL-SDR device as before, and the user won't be asked to confirm. If you use a new provider, the user will be asked which RTL-SDR device to connect to.
+To reopen the device, call the `get()` method in the same [`RTL2832U_Provider`](../src/rtlsdr/rtl2832u.ts) object you used before. By reusing a provider, the method will return a connection to the same RTL-SDR device as before, and the user won't be asked to confirm. If you use a new provider, the user will be asked which RTL-SDR device to connect to.
 
 ## Example
 
