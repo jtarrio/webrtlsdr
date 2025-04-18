@@ -133,15 +133,14 @@ export class FMDemodulator {
         div = real / imag;
         sgn = -sgn;
       }
-      const value =
+      const angle =
         circ +
         sgn *
           (ang +
             div /
               (0.98419158358617365 +
-                div * (0.093485702629671305 + div * 0.19556307900617517))) *
-          mul;
-      out[i] = value;
+                div * (0.093485702629671305 + div * 0.19556307900617517)));
+      out[i] = angle * mul;
     }
     this.lI = lI;
     this.lQ = lQ;
