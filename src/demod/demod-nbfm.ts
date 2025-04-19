@@ -17,20 +17,19 @@ import { FMDemodulator } from "../dsp/demodulators";
 import { FIRFilter, FrequencyShifter } from "../dsp/filters";
 import { getPower } from "../dsp/power";
 import { ComplexDownsampler } from "../dsp/resamplers";
-import { Demodulated, Mode, ModulationScheme } from "./modes";
+import { Configurator, Demodulated, Demod, registerDemod } from "./modes";
+
+/** Mode parameters for NBFM. */
+export type ModeNBFM = { scheme: "NBFM"; maxF: number; squelch: number };
 
 /** A demodulator for narrowband FM signals. */
-export class SchemeNBFM implements ModulationScheme {
+export class DemodNBFM implements Demod<ModeNBFM> {
   /**
    * @param inRate The sample rate of the input samples.
    * @param outRate The sample rate of the output audio.
    * @param maxF The frequency shift for maximum amplitude.
    */
-  constructor(
-    inRate: number,
-    private outRate: number,
-    private mode: Mode & { scheme: "NBFM" }
-  ) {
+  constructor(inRate: number, private outRate: number, private mode: ModeNBFM) {
     this.shifter = new FrequencyShifter(inRate);
     this.downsampler = new ComplexDownsampler(inRate, outRate, 151);
     const kernel = makeLowPassKernel(outRate, mode.maxF, 151);
@@ -45,11 +44,11 @@ export class SchemeNBFM implements ModulationScheme {
   private filterQ: FIRFilter;
   private demodulator: FMDemodulator;
 
-  getMode(): Mode {
+  getMode(): ModeNBFM {
     return this.mode;
   }
 
-  setMode(mode: Mode & { scheme: "NBFM" }) {
+  setMode(mode: ModeNBFM) {
     this.mode = mode;
     const kernel = makeLowPassKernel(this.outRate, mode.maxF, 151);
     this.filterI.setCoefficients(kernel);
@@ -82,5 +81,37 @@ export class SchemeNBFM implements ModulationScheme {
       stereo: false,
       snr: signalPower / allPower,
     };
+  }
+}
+
+export class ConfigNBFM extends Configurator<ModeNBFM> {
+  constructor(mode: ModeNBFM | string) {
+    super(mode);
+  }
+  protected create(): ModeNBFM {
+    return { scheme: "NBFM", maxF: 5000, squelch: 0 };
+  }
+  hasBandwidth(): boolean {
+    return true;
+  }
+  getBandwidth(): number {
+    return 2 * this.mode.maxF;
+  }
+  setBandwidth(bandwidth: number): ConfigNBFM {
+    this.mode = {
+      ...this.mode,
+      maxF: Math.max(125, Math.min(bandwidth / 2, 15000)),
+    };
+    return this;
+  }
+  hasSquelch(): boolean {
+    return true;
+  }
+  getSquelch(): number {
+    return this.mode.squelch;
+  }
+  setSquelch(squelch: number): ConfigNBFM {
+    this.mode = { ...this.mode, squelch: Math.max(0, Math.min(squelch, 6)) };
+    return this;
   }
 }

@@ -17,20 +17,19 @@ import { FMDemodulator, StereoSeparator } from "../dsp/demodulators";
 import { FrequencyShifter, Deemphasizer, FIRFilter } from "../dsp/filters";
 import { getPower } from "../dsp/power";
 import { ComplexDownsampler, RealDownsampler } from "../dsp/resamplers";
-import { Demodulated, Mode, ModulationScheme } from "./modes";
+import { Configurator, Demodulated, Demod, registerDemod } from "./modes";
+
+/** Mode parameters for WBFM. */
+export type ModeWBFM = { scheme: "WBFM"; stereo: boolean };
 
 /** A demodulator for wideband FM signals. */
-export class SchemeWBFM implements ModulationScheme {
+export class DemodWBFM implements Demod<ModeWBFM> {
   /**
    * @param inRate The sample rate of the input samples.
    * @param outRate The sample rate of the output audio.
    * @param stereo Whether to try to demodulate a stereo signal, if present.
    */
-  constructor(
-    inRate: number,
-    outRate: number,
-    private mode: Mode & { scheme: "WBFM" }
-  ) {
+  constructor(inRate: number, outRate: number, private mode: ModeWBFM) {
     const maxF = 75000;
     const pilotF = 19000;
     const deemphTc = 50;
@@ -62,11 +61,11 @@ export class SchemeWBFM implements ModulationScheme {
   private leftDeemph: Deemphasizer;
   private rightDeemph: Deemphasizer;
 
-  getMode(): Mode {
+  getMode(): ModeWBFM {
     return this.mode;
   }
 
-  setMode(mode: Mode & { scheme: "WBFM" }) {
+  setMode(mode: ModeWBFM) {
     this.mode = mode;
   }
 
@@ -116,5 +115,27 @@ export class SchemeWBFM implements ModulationScheme {
       stereo: stereoOut,
       snr: signalPower / allPower,
     };
+  }
+}
+
+export class ConfigWBFM extends Configurator<ModeWBFM> {
+  constructor(mode: ModeWBFM | string) {
+    super(mode);
+  }
+  protected create(): ModeWBFM {
+    return { scheme: "WBFM", stereo: true };
+  }
+  hasStereo(): boolean {
+    return true;
+  }
+  getStereo(): boolean {
+    return this.mode.stereo;
+  }
+  setStereo(stereo: boolean): ConfigWBFM {
+    this.mode = { ...this.mode, stereo: stereo };
+    return this;
+  }
+  getBandwidth(): number {
+    return 150000;
   }
 }

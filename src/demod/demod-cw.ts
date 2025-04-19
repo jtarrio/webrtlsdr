@@ -1,4 +1,4 @@
-// Copyright 2014 Google Inc. All rights reserved.
+// Copyright 2024 Jacobo Tarrio Barreiro. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,56 +13,48 @@
 // limitations under the License.
 
 import { makeLowPassKernel } from "../dsp/coefficients";
-import { AMDemodulator } from "../dsp/demodulators";
-import { FrequencyShifter, FIRFilter } from "../dsp/filters";
+import { AGC, FIRFilter, FrequencyShifter } from "../dsp/filters";
 import { getPower } from "../dsp/power";
 import { ComplexDownsampler } from "../dsp/resamplers";
-import { Demodulated, Mode, ModulationScheme } from "./modes";
+import { Configurator, Demodulated, Demod, registerDemod } from "./modes";
 
-/** A demodulator for amplitude modulated signals. */
-export class SchemeAM implements ModulationScheme {
-  /**
-   * @param inRate The sample rate of the input samples.
-   * @param outRate The sample rate of the output audio.
-   * @param bandwidth The bandwidth of the input signal.
-   */
-  constructor(
-    inRate: number,
-    private outRate: number,
-    private mode: Mode & { scheme: "AM" }
-  ) {
+/** Mode parameters for CW. */
+export type ModeCW = { scheme: "CW"; bandwidth: number };
+
+/** Output frequency of the zero-beat CW signals. */
+const ToneFrequency = 600;
+
+/** A demodulator for continuous wave signals. */
+export class DemodCW implements Demod<ModeCW> {
+  constructor(inRate: number, private outRate: number, private mode: ModeCW) {
     this.shifter = new FrequencyShifter(inRate);
     this.downsampler = new ComplexDownsampler(inRate, outRate, 151);
-    const kernel = makeLowPassKernel(outRate, this.mode.bandwidth / 2, 151);
+    const kernel = makeLowPassKernel(outRate, mode.bandwidth / 2, 351);
     this.filterI = new FIRFilter(kernel);
     this.filterQ = new FIRFilter(kernel);
-    this.demodulator = new AMDemodulator(outRate);
+    this.toneShifter = new FrequencyShifter(outRate);
+    this.agc = new AGC(outRate, 10);
   }
 
   private shifter: FrequencyShifter;
   private downsampler: ComplexDownsampler;
   private filterI: FIRFilter;
   private filterQ: FIRFilter;
-  private demodulator: AMDemodulator;
+  private toneShifter: FrequencyShifter;
+  private agc: AGC;
 
-  getMode(): Mode {
+  getMode(): ModeCW {
     return this.mode;
   }
 
-  setMode(mode: Mode & { scheme: "AM" }) {
+  setMode(mode: ModeCW) {
     this.mode = mode;
     const kernel = makeLowPassKernel(this.outRate, mode.bandwidth / 2, 151);
     this.filterI.setCoefficients(kernel);
     this.filterQ.setCoefficients(kernel);
   }
 
-  /**
-   * Demodulates the signal.
-   * @param samplesI The I components of the samples.
-   * @param samplesQ The Q components of the samples.
-   * @param freqOffset The offset of the signal in the samples.
-   * @returns The demodulated audio signal.
-   */
+  /** Demodulates the given I/Q samples into the real output. */
   demodulate(
     samplesI: Float32Array,
     samplesQ: Float32Array,
@@ -74,12 +66,35 @@ export class SchemeAM implements ModulationScheme {
     this.filterI.inPlace(I);
     this.filterQ.inPlace(Q);
     let signalPower = (getPower(I, Q) * this.outRate) / this.mode.bandwidth;
-    this.demodulator.demodulate(I, Q, I);
+    this.toneShifter.inPlace(I, Q, ToneFrequency);
+    this.agc.inPlace(I);
     return {
       left: I,
       right: new Float32Array(I),
       stereo: false,
       snr: signalPower / allPower,
     };
+  }
+}
+
+export class ConfigCW extends Configurator<ModeCW> {
+  constructor(mode: ModeCW | string) {
+    super(mode);
+  }
+  protected create(): ModeCW {
+    return { scheme: "CW", bandwidth: 50 };
+  }
+  hasBandwidth(): boolean {
+    return true;
+  }
+  getBandwidth(): number {
+    return this.mode.bandwidth;
+  }
+  setBandwidth(bandwidth: number): ConfigCW {
+    this.mode = {
+      ...this.mode,
+      bandwidth: Math.max(5, Math.min(bandwidth, 1000)),
+    };
+    return this;
   }
 }

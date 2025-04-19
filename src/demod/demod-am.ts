@@ -13,49 +13,46 @@
 // limitations under the License.
 
 import { makeLowPassKernel } from "../dsp/coefficients";
-import { Sideband, SSBDemodulator } from "../dsp/demodulators";
-import { FrequencyShifter, AGC, FIRFilter } from "../dsp/filters";
+import { AMDemodulator } from "../dsp/demodulators";
+import { FrequencyShifter, FIRFilter } from "../dsp/filters";
 import { getPower } from "../dsp/power";
 import { ComplexDownsampler } from "../dsp/resamplers";
-import { Demodulated, Mode, ModulationScheme } from "./modes";
+import { Configurator, Demodulated, Demod, registerDemod } from "./modes";
 
-/** A demodulator for single-sideband modulated signals. */
-export class SchemeSSB implements ModulationScheme {
+/** Mode parameters for AM. */
+export type ModeAM = { scheme: "AM"; bandwidth: number; squelch: number };
+
+/** A demodulator for amplitude modulated signals. */
+export class DemodAM implements Demod<ModeAM> {
   /**
    * @param inRate The sample rate of the input samples.
    * @param outRate The sample rate of the output audio.
    * @param bandwidth The bandwidth of the input signal.
-   * @param upper Whether to demodulate the upper sideband (lower otherwise).
    */
-  constructor(
-    inRate: number,
-    private outRate: number,
-    private mode: Mode & { scheme: "USB" | "LSB" }
-  ) {
+  constructor(inRate: number, private outRate: number, private mode: ModeAM) {
     this.shifter = new FrequencyShifter(inRate);
     this.downsampler = new ComplexDownsampler(inRate, outRate, 151);
-    const kernel = makeLowPassKernel(this.outRate, mode.bandwidth / 2, 151);
-    this.filter = new FIRFilter(kernel);
-    this.demodulator = new SSBDemodulator(
-      mode.scheme == "USB" ? Sideband.Upper : Sideband.Lower
-    );
-    this.agc = new AGC(outRate, 3);
+    const kernel = makeLowPassKernel(outRate, this.mode.bandwidth / 2, 151);
+    this.filterI = new FIRFilter(kernel);
+    this.filterQ = new FIRFilter(kernel);
+    this.demodulator = new AMDemodulator(outRate);
   }
 
   private shifter: FrequencyShifter;
   private downsampler: ComplexDownsampler;
-  private filter: FIRFilter;
-  private demodulator: SSBDemodulator;
-  private agc: AGC;
+  private filterI: FIRFilter;
+  private filterQ: FIRFilter;
+  private demodulator: AMDemodulator;
 
-  getMode(): Mode {
+  getMode(): ModeAM {
     return this.mode;
   }
 
-  setMode(mode: Mode & { scheme: "USB" | "LSB" }) {
+  setMode(mode: ModeAM) {
     this.mode = mode;
     const kernel = makeLowPassKernel(this.outRate, mode.bandwidth / 2, 151);
-    this.filter.setCoefficients(kernel);
+    this.filterI.setCoefficients(kernel);
+    this.filterQ.setCoefficients(kernel);
   }
 
   /**
@@ -73,16 +70,47 @@ export class SchemeSSB implements ModulationScheme {
     this.shifter.inPlace(samplesI, samplesQ, -freqOffset);
     const [I, Q] = this.downsampler.downsample(samplesI, samplesQ);
     let allPower = getPower(I, Q);
+    this.filterI.inPlace(I);
+    this.filterQ.inPlace(Q);
+    let signalPower = (getPower(I, Q) * this.outRate) / this.mode.bandwidth;
     this.demodulator.demodulate(I, Q, I);
-    this.filter.inPlace(I);
-    let signalPower =
-      (getPower(I, I) * this.outRate) / (this.mode.bandwidth * 2);
-    this.agc.inPlace(I);
     return {
       left: I,
       right: new Float32Array(I),
       stereo: false,
       snr: signalPower / allPower,
     };
+  }
+}
+
+export class ConfigAM extends Configurator<ModeAM> {
+  constructor(mode: ModeAM | string) {
+    super(mode);
+  }
+  protected create(): ModeAM {
+    return { scheme: "AM", bandwidth: 15000, squelch: 0 };
+  }
+  hasBandwidth(): boolean {
+    return true;
+  }
+  getBandwidth(): number {
+    return this.mode.bandwidth;
+  }
+  setBandwidth(bandwidth: number): ConfigAM {
+    this.mode = {
+      ...this.mode,
+      bandwidth: Math.max(250, Math.min(bandwidth, 30000)),
+    };
+    return this;
+  }
+  hasSquelch(): boolean {
+    return true;
+  }
+  getSquelch(): number {
+    return this.mode.squelch;
+  }
+  setSquelch(squelch: number): ConfigAM {
+    this.mode = { ...this.mode, squelch: Math.max(0, Math.min(squelch, 6)) };
+    return this;
   }
 }

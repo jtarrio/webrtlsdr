@@ -12,12 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/**
+ * Demodulation schemes consist of three parts: a class that does the demodulation
+ * (extends `Demod`), a type for the modulation parameters (extends `Mode`),
+ * and a class that provides a uniform interface to configure the modulation
+ * (extends `Configurator`).
+ *
+ * The type for the modulation parameters is an object that must contain a
+ * field named `scheme`, which contains the name of the modulation scheme.
+ * Other than that, your type may contain anything; however, I recommend that
+ * you make it JSON serializable.
+ *
+ * The configurator class lets you use generic code to configure the mode.
+ * It provides methods to tell whether some settings are configurable, and to
+ * get and set their values. Those methods take care of clamping the minimum
+ * and maximum values and other validation.
+ *
+ * The demodulator class takes I and Q samples and outputs audio samples.
+ * It can be configured using the `setMode()` method, which takes an object
+ * with the new modulation parameters.
+ *
+ * Demodulation schemes can be registered using the `registerDemod()` function,
+ * which makes them available via the `getSchemes()`, `getMode()`, and `getDemod()`
+ * functions. This also lets the `Demodulator` class use your demodulation scheme.
+ */
+
 /** Interface for classes that demodulate IQ radio streams. */
-export interface ModulationScheme {
+export interface Demod<M extends Mode> {
   /** Returns the current mode parameters. */
-  getMode(): Mode;
-  /** Changes the mode parameters for the current scheme. */
-  setMode(mode: Mode): void;
+  getMode(): M;
+  /** Changes the mode parameters for the demod. */
+  setMode(mode: M): void;
   /**
    * Demodulates the signal.
    * @param samplesI The I components of the samples.
@@ -41,163 +66,132 @@ export type Demodulated = {
 };
 
 /** Modulation parameters. */
-export type Mode =
-  /** Wideband frequency modulation. */
-  | { scheme: "WBFM"; stereo: boolean }
-  /** Narrowband frequency modulation. */
-  | { scheme: "NBFM"; maxF: number; squelch: number }
-  /** Amplitude modulation. */
-  | { scheme: "AM"; bandwidth: number; squelch: number }
-  /** Upper sideband modulation. */
-  | { scheme: "USB"; bandwidth: number; squelch: number }
-  /** Lower sideband modulation. */
-  | { scheme: "LSB"; bandwidth: number; squelch: number }
-  /** Continuous wave. */
-  | { scheme: "CW"; bandwidth: number };
+export type Mode = { scheme: string };
 
-/** String representing one of the known schemes. */
-export type Scheme = Mode["scheme"];
-
-/** Returns the list of known schemes. */
-export function getSchemes(): Array<Scheme> {
-  return ["WBFM", "NBFM", "AM", "USB", "LSB", "CW"];
+/**
+ * Registers a modulation scheme. If a modulation scheme by that name already exists, it is replaced.
+ * @param name the name of the modulation scheme. Must match the content of `scheme` in the mode.
+ * @param demod the constructor of the Demod class.
+ * @param params the constructor of the Parameters class.
+ */
+export function registerDemod<M extends Mode>(
+  name: M["scheme"],
+  demod: DemodConstructor<M>,
+  params: ParametersConstructor<M>
+) {
+  registeredDemods.set(name, { demod: demod, params });
 }
 
-/** Returns the default mode for the given scheme. */
-export function getMode(scheme: Scheme): Mode {
-  switch (scheme) {
-    case "WBFM":
-      return { scheme: "WBFM", stereo: true };
-    case "NBFM":
-      return { scheme: "NBFM", maxF: 5000, squelch: 0 };
-    case "AM":
-      return { scheme: "AM", bandwidth: 15000, squelch: 0 };
-    case "USB":
-      return { scheme: "USB", bandwidth: 2800, squelch: 0 };
-    case "LSB":
-      return { scheme: "LSB", bandwidth: 2800, squelch: 0 };
-    case "CW":
-      return { scheme: "CW", bandwidth: 50 };
-  }
+/** Unregisters a modulation scheme. */
+export function unregisterDemod(name: string) {
+  registeredDemods.delete(name);
+}
+
+/** Returns the list of registered modulation schemes, in the order in which they were registered. */
+export function getSchemes(): Array<string> {
+  return [...registeredDemods.keys()];
+}
+
+/** Returns the default mode for the given scheme name. */
+export function getMode(scheme: string): Mode {
+  let reg = getRegisteredDemod(scheme);
+  return new reg.params(scheme).mode;
+}
+
+/** Returns a Scheme object for the given mode. */
+export function getDemod<M extends Mode>(
+  inRate: number,
+  outRate: number,
+  mode: M
+): Demod<M> {
+  let reg = getRegisteredDemod(mode);
+  return new reg.demod(inRate, outRate, mode);
 }
 
 /** Returns accessors for the mode's or scheme's parameters. */
-export function modeParameters(mode: Mode): ModeParameters;
-export function modeParameters(scheme: Scheme): SchemeParameters;
-export function modeParameters(
-  mode: Mode | Scheme
-): ModeParameters | SchemeParameters {
-  if (typeof mode === "string") return new SchemeParameters(mode);
-  return new ModeParameters(mode);
+export function modeParameters<M extends Mode>(mode: M): Configurator<M>;
+export function modeParameters(scheme: string): Configurator<Mode>;
+export function modeParameters(mode: Mode | string): Configurator<Mode> {
+  let reg = getRegisteredDemod(mode);
+  return new reg.params(mode);
 }
 
-/** A class to inspect and modify a mode's parameters. */
-export class ModeParameters {
-  constructor(public mode: Mode) {}
-
-  hasStereo(): boolean {
-    return this.mode.scheme == "WBFM";
+/** A base for classes that inspect and modify a mode parameters object. */
+export abstract class Configurator<M extends Mode> {
+  constructor(private base: M | string) {}
+  get mode(): M {
+    if (typeof this.base === "string") {
+      this.base = this.create(this.base);
+    }
+    return this.base;
+  }
+  protected set mode(mode: M) {
+    this.base = mode;
   }
 
+  /** Creates an instance of the mode object for the given scheme with the default parameters. */
+  protected abstract create(scheme: string): M;
+
+  /** Returns whether stereo output is settable in this mode. */
+  hasStereo(): boolean {
+    return false;
+  }
+  /** Returns whether stereo output is enabled. */
   getStereo(): boolean {
-    return this.mode.scheme == "WBFM" && this.mode.stereo;
+    return false;
   }
-
-  setStereo(stereo: boolean): ModeParameters {
-    if (this.mode.scheme == "WBFM")
-      this.mode = { ...this.mode, stereo: stereo };
+  /** Enables or disables stereo output. */
+  setStereo(stereo: boolean): Configurator<M> {
     return this;
   }
-
+  /** Returns whether the bandwidth is settable in this mode. */
   hasBandwidth(): boolean {
-    return this.mode.scheme != "WBFM";
+    return false;
   }
-
-  getBandwidth(): number {
-    switch (this.mode.scheme) {
-      case "WBFM":
-        return 150000;
-      case "NBFM":
-        return 2 * this.mode.maxF;
-      default:
-        return this.mode.bandwidth;
-    }
-  }
-
-  setBandwidth(bandwidth: number): ModeParameters {
-    switch (this.mode.scheme) {
-      case "WBFM":
-        break;
-      case "NBFM":
-        this.mode = {
-          ...this.mode,
-          maxF: Math.max(125, Math.min(bandwidth / 2, 15000)),
-        };
-        break;
-      case "AM":
-        this.mode = {
-          ...this.mode,
-          bandwidth: Math.max(250, Math.min(bandwidth, 30000)),
-        };
-        break;
-      case "USB":
-      case "LSB":
-        this.mode = {
-          ...this.mode,
-          bandwidth: Math.max(10, Math.min(bandwidth, 15000)),
-        };
-        break;
-      case "CW":
-        this.mode = {
-          ...this.mode,
-          bandwidth: Math.max(5, Math.min(bandwidth, 1000)),
-        };
-        break;
-    }
+  /**
+   * Returns the bandwidth used by this mode.
+   * You should always override this as every mode uses some bandwidth, even if it's not settable.
+   */
+  abstract getBandwidth(): number;
+  /** Changes the bandwidth used by this mode. */
+  setBandwidth(bandwidth: number): Configurator<M> {
     return this;
   }
-
+  /** Returns whether the squelch level is settable. */
   hasSquelch(): boolean {
-    return this.mode.scheme != "WBFM" && this.mode.scheme != "CW";
+    return false;
   }
-
+  /** Returns the current squelch level. */
   getSquelch(): number {
-    if (this.mode.scheme == "WBFM" || this.mode.scheme == "CW") return 0;
-    return this.mode.squelch;
+    return 0;
   }
-
-  setSquelch(squelch: number): ModeParameters {
-    if (this.mode.scheme != "WBFM" && this.mode.scheme != "CW")
-      this.mode = { ...this.mode, squelch: Math.max(0, Math.min(squelch, 6)) };
+  /** Sets the squelch level. */
+  setSquelch(squelch: number): Configurator<M> {
     return this;
   }
 }
 
-/** A class to inspect a scheme's parameters. */
-export class SchemeParameters {
-  constructor(public scheme: Scheme) {}
+/** The type for a constructor of a Scheme object. */
+type DemodConstructor<M extends Mode> = new (
+  inRate: number,
+  outRate: number,
+  mode: M
+) => Demod<M>;
 
-  hasStereo(): boolean {
-    return this.scheme == "WBFM";
-  }
+/** The type for a constructor of a Parameters object. */
+type ParametersConstructor<M extends Mode> = new (
+  base: M | string
+) => Configurator<M>;
 
-  setStereo(stereo: boolean): ModeParameters {
-    return modeParameters(getMode(this.scheme)).setStereo(stereo);
-  }
+type RegisteredDemod = {
+  demod: DemodConstructor<any>;
+  params: ParametersConstructor<any>;
+};
+var registeredDemods = new Map<string, RegisteredDemod>();
 
-  hasBandwidth(): boolean {
-    return this.scheme != "WBFM";
-  }
-
-  setBandwidth(bandwidth: number): ModeParameters {
-    return modeParameters(getMode(this.scheme)).setBandwidth(bandwidth);
-  }
-
-  hasSquelch(): boolean {
-    return this.scheme != "WBFM" && this.scheme != "CW";
-  }
-
-  setSquelch(squelch: number): ModeParameters {
-    return modeParameters(getMode(this.scheme)).setSquelch(squelch);
-  }
+function getRegisteredDemod(mode: Mode | string): RegisteredDemod {
+  let scheme = typeof mode === "string" ? mode : mode.scheme;
+  let reg = registeredDemods.get(scheme);
+  if (!reg) throw `Scheme "${scheme}" was not registered.`;
+  return reg;
 }
