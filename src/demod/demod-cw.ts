@@ -26,6 +26,11 @@ const ToneFrequency = 600;
 
 /** A demodulator for continuous wave signals. */
 export class DemodCW implements Demod<ModeCW> {
+  /**
+   * @param inRate The sample rate of the input samples.
+   * @param outRate The sample rate of the output audio.
+   * @param mode The mode to use initially.
+   */
   constructor(inRate: number, private outRate: number, private mode: ModeCW) {
     this.shifter = new FrequencyShifter(inRate);
     this.downsampler = new ComplexDownsampler(inRate, outRate, 151);
@@ -77,6 +82,7 @@ export class DemodCW implements Demod<ModeCW> {
   }
 }
 
+/** Configurator for the CW mode. */
 export class ConfigCW extends Configurator<ModeCW> {
   constructor(mode: ModeCW | string) {
     super(mode);

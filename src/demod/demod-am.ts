@@ -27,7 +27,7 @@ export class DemodAM implements Demod<ModeAM> {
   /**
    * @param inRate The sample rate of the input samples.
    * @param outRate The sample rate of the output audio.
-   * @param bandwidth The bandwidth of the input signal.
+   * @param mode The mode to use initially.
    */
   constructor(inRate: number, private outRate: number, private mode: ModeAM) {
     this.shifter = new FrequencyShifter(inRate);
@@ -83,6 +83,7 @@ export class DemodAM implements Demod<ModeAM> {
   }
 }
 
+/** Configurator for the AM mode. */
 export class ConfigAM extends Configurator<ModeAM> {
   constructor(mode: ModeAM | string) {
     super(mode);

@@ -27,7 +27,7 @@ export class DemodNBFM implements Demod<ModeNBFM> {
   /**
    * @param inRate The sample rate of the input samples.
    * @param outRate The sample rate of the output audio.
-   * @param maxF The frequency shift for maximum amplitude.
+   * @param mode The mode to use initially.
    */
   constructor(inRate: number, private outRate: number, private mode: ModeNBFM) {
     this.shifter = new FrequencyShifter(inRate);
@@ -84,6 +84,7 @@ export class DemodNBFM implements Demod<ModeNBFM> {
   }
 }
 
+/** Configurator for the NBFM mode. */
 export class ConfigNBFM extends Configurator<ModeNBFM> {
   constructor(mode: ModeNBFM | string) {
     super(mode);

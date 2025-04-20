@@ -31,8 +31,7 @@ export class DemodSSB implements Demod<ModeSSB> {
   /**
    * @param inRate The sample rate of the input samples.
    * @param outRate The sample rate of the output audio.
-   * @param bandwidth The bandwidth of the input signal.
-   * @param upper Whether to demodulate the upper sideband (lower otherwise).
+   * @param mode The mode to use initially.
    */
   constructor(inRate: number, private outRate: number, private mode: ModeSSB) {
     this.shifter = new FrequencyShifter(inRate);
@@ -90,6 +89,7 @@ export class DemodSSB implements Demod<ModeSSB> {
   }
 }
 
+/** Configurator for the USB and LSB modes. */
 export class ConfigSSB extends Configurator<ModeSSB> {
   constructor(mode: ModeSSB | string) {
     super(mode);

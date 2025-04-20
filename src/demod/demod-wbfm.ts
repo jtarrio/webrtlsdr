@@ -26,35 +26,137 @@ export type ModeWBFM = { scheme: "WBFM"; stereo: boolean };
 export class DemodWBFM implements Demod<ModeWBFM> {
   /**
    * @param inRate The sample rate of the input samples.
-   * @param outRate The sample rate of the output audio.
-   * @param stereo Whether to try to demodulate a stereo signal, if present.
+   * @param outRate The sample rate of the output samples.
+   * @param mode The mode to use initially.
    */
   constructor(inRate: number, outRate: number, private mode: ModeWBFM) {
-    const maxF = 75000;
-    const pilotF = 19000;
-    const deemphTc = 50;
-    this.interRate = Math.min(inRate, 336000);
-    this.shifter = new FrequencyShifter(inRate);
-    if (this.interRate != inRate) {
-      this.downsampler = new ComplexDownsampler(inRate, this.interRate, 151);
-    }
-    const kernel = makeLowPassKernel(this.interRate, maxF, 151);
-    this.filterI = new FIRFilter(kernel);
-    this.filterQ = new FIRFilter(kernel);
-    this.demodulator = new FMDemodulator(maxF / this.interRate);
-    this.monoSampler = new RealDownsampler(this.interRate, outRate, 41);
-    this.stereoSampler = new RealDownsampler(this.interRate, outRate, 41);
-    this.stereoSeparator = new StereoSeparator(this.interRate, pilotF);
-    this.leftDeemph = new Deemphasizer(outRate, deemphTc);
-    this.rightDeemph = new Deemphasizer(outRate, deemphTc);
+    let interRate = Math.min(inRate, 336000);
+    this.stage1 = new DemodWBFMStage1(inRate, interRate, mode);
+    this.stage2 = new DemodWBFMStage2(interRate, outRate, mode);
   }
 
-  private interRate: number;
+  private stage1: DemodWBFMStage1;
+  private stage2: DemodWBFMStage2;
+
+  getMode(): ModeWBFM {
+    return this.mode;
+  }
+
+  setMode(mode: ModeWBFM) {
+    this.mode = mode;
+    this.stage1.setMode(mode);
+    this.stage2.setMode(mode);
+  }
+
+  /**
+   * Demodulates the signal.
+   * @param samplesI The I components of the samples.
+   * @param samplesQ The Q components of the samples.
+   * @param freqOffset The offset of the signal in the samples.
+   * @param inStereo Whether to try decoding the stereo signal.
+   * @returns The demodulated audio signal.
+   */
+  demodulate(
+    samplesI: Float32Array,
+    samplesQ: Float32Array,
+    freqOffset: number
+  ): Demodulated {
+    let o1 = this.stage1.demodulate(samplesI, samplesQ, freqOffset);
+    let o2 = this.stage2.demodulate(o1.left);
+
+    o2.snr = o1.snr;
+    return o2;
+  }
+}
+
+/**
+ * First stage demodulator for wideband FM signals.
+ * Returns the raw demodulated FM signal, with stereo pilot, difference signal and RDS, if they exist.
+ * The output is duplicated in the left and right channels.
+ */
+export class DemodWBFMStage1 implements Demod<ModeWBFM> {
+  /**
+   * @param inRate The sample rate of the input samples.
+   * @param outRate The sample rate of the output audio.
+   * @param mode The mode to use initially.
+   */
+  constructor(inRate: number, private outRate: number, private mode: ModeWBFM) {
+    const maxF = 75000;
+    this.shifter = new FrequencyShifter(inRate);
+    if (inRate != outRate) {
+      this.downsampler = new ComplexDownsampler(inRate, outRate, 151);
+    }
+    const kernel = makeLowPassKernel(outRate, maxF, 151);
+    this.filterI = new FIRFilter(kernel);
+    this.filterQ = new FIRFilter(kernel);
+    this.demodulator = new FMDemodulator(maxF / outRate);
+  }
+
   private shifter: FrequencyShifter;
   private downsampler?: ComplexDownsampler;
   private filterI: FIRFilter;
   private filterQ: FIRFilter;
   private demodulator: FMDemodulator;
+
+  getMode(): ModeWBFM {
+    return this.mode;
+  }
+
+  setMode(mode: ModeWBFM) {
+    this.mode = mode;
+  }
+
+  /**
+   * Demodulates the signal.
+   * @param samplesI The I components of the samples.
+   * @param samplesQ The Q components of the samples.
+   * @param freqOffset The offset of the signal in the samples.
+   * @returns The demodulated audio signal.
+   */
+  demodulate(
+    samplesI: Float32Array,
+    samplesQ: Float32Array,
+    freqOffset: number
+  ): Demodulated {
+    this.shifter.inPlace(samplesI, samplesQ, -freqOffset);
+    let [I, Q] = this.downsampler
+      ? this.downsampler.downsample(samplesI, samplesQ)
+      : [samplesI, samplesQ];
+    let allPower = getPower(I, Q);
+    this.filterI.inPlace(I);
+    this.filterQ.inPlace(Q);
+    let signalPower = (getPower(I, Q) * this.outRate) / 150000;
+    this.demodulator.demodulate(I, Q, I);
+    return {
+      left: I,
+      right: new Float32Array(I),
+      stereo: false,
+      snr: signalPower / allPower,
+    };
+  }
+}
+
+/**
+ * Second stage demodulator for wideband FM signals.
+ * Takes the output of stage 1 and does stereo extraction.
+ * Only the I channel is used; Q channel is ignored.
+ * */
+export class DemodWBFMStage2 implements Demod<ModeWBFM> {
+  /**
+   * @param inRate The sample rate of the input samples.
+   * @param outRate The sample rate of the output audio.
+   * @param mode The mode to use initially.
+   */
+  constructor(inRate: number, outRate: number, private mode: ModeWBFM) {
+    const pilotF = 19000;
+    const deemphTc = 50;
+    this.monoSampler = new RealDownsampler(inRate, outRate, 41);
+    this.stereoSampler = new RealDownsampler(inRate, outRate, 41);
+    this.stereoSeparator = new StereoSeparator(inRate, pilotF);
+    this.leftDeemph = new Deemphasizer(outRate, deemphTc);
+    this.rightDeemph = new Deemphasizer(outRate, deemphTc);
+  }
+
   private monoSampler: RealDownsampler;
   private stereoSampler: RealDownsampler;
   private stereoSeparator: StereoSeparator;
@@ -72,31 +174,15 @@ export class DemodWBFM implements Demod<ModeWBFM> {
   /**
    * Demodulates the signal.
    * @param samplesI The I components of the samples.
-   * @param samplesQ The Q components of the samples.
-   * @param freqOffset The offset of the signal in the samples.
-   * @param inStereo Whether to try decoding the stereo signal.
    * @returns The demodulated audio signal.
    */
-  demodulate(
-    samplesI: Float32Array,
-    samplesQ: Float32Array,
-    freqOffset: number
-  ): Demodulated {
-    this.shifter.inPlace(samplesI, samplesQ, -freqOffset);
-    let [I, Q] = this.downsampler
-      ? this.downsampler.downsample(samplesI, samplesQ)
-      : [samplesI, samplesQ];
-    let allPower = getPower(I, Q);
-    this.filterI.inPlace(I);
-    this.filterQ.inPlace(Q);
-    let signalPower = (getPower(I, Q) * this.interRate) / 150000;
-    this.demodulator.demodulate(I, Q, I);
-    const leftAudio = this.monoSampler.downsample(I);
+  demodulate(samplesI: Float32Array): Demodulated {
+    const leftAudio = this.monoSampler.downsample(samplesI);
     const rightAudio = new Float32Array(leftAudio);
     let stereoOut = false;
 
     if (this.mode.stereo) {
-      const stereo = this.stereoSeparator.separate(I);
+      const stereo = this.stereoSeparator.separate(samplesI);
       if (stereo.found) {
         stereoOut = true;
         const diffAudio = this.stereoSampler.downsample(stereo.diff);
@@ -113,11 +199,12 @@ export class DemodWBFM implements Demod<ModeWBFM> {
       left: leftAudio,
       right: rightAudio,
       stereo: stereoOut,
-      snr: signalPower / allPower,
+      snr: 1,
     };
   }
 }
 
+/** Configurator for the WBFM mode. */
 export class ConfigWBFM extends Configurator<ModeWBFM> {
   constructor(mode: ModeWBFM | string) {
     super(mode);
