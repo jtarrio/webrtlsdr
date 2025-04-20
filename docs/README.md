@@ -28,3 +28,4 @@ You can use the low-level API if you need to access the RTL-SDR stick directly, 
 
 - Accessing the RTL-SDR stick through the [low-level API](lowlevel.md)
 - Creating a radio demodulator through the [high-level API](highlevel.md)
+  - Writing a [new demodulator](new-demod.md) for the high-level API

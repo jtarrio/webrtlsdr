@@ -273,11 +273,11 @@ class PowerLogger implements SampleReceiver {
 
 ## The `Demodulator` class
 
-Web RTL-SDR provides a [`Demodulator`](../src/demod/demodulator.ts) class, which is a [`SampleReceiver`](../src/radio/sample_receiver.ts) implementation that can demodulate FM, AM, SSB, and CW signals. By default, it will play the demodulated audio on the speakers or headphones using the Web Audio API, but if you want to do something else (for example, record it in a file or send it over the network), you can provide your own code to do that.
+Web RTL-SDR provides a [`Demodulator`](../src/demod/empty-demodulator.ts) class, which is a [`SampleReceiver`](../src/radio/sample_receiver.ts) implementation that can demodulate FM, AM, SSB, and CW signals. By default, it will play the demodulated audio on the speakers or headphones using the Web Audio API, but if you want to do something else (for example, record it in a file or send it over the network), you can provide your own code to do that.
 
 ### Modes
 
-The [`Demodulator`](../src/demod/demodulator.ts) supports multiple modulation schemes that are defined using [`Mode`](../src/demod/modes.ts) objects. You can use the following functions to create and modify [`Mode`](../src/demod/modes.ts) objects:
+The [`Demodulator`](../src/demod/empty-demodulator.ts) supports multiple modulation schemes that are defined using [`Mode`](../src/demod/modes.ts) objects. You can use the following functions to create and modify [`Mode`](../src/demod/modes.ts) objects:
 
 ```typescript
 import {
@@ -336,7 +336,7 @@ let newMode = params.mode;
 import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator";
 ```
 
-The [`Demodulator`](../src/demod/demodulator.ts)'s constructor doesn't take any arguments.
+The [`Demodulator`](../src/demod/empty-demodulator.ts)'s constructor doesn't take any arguments.
 
 #### Example
 
@@ -347,7 +347,7 @@ let radio = new Radio(new RTL2832U_Provider(), demodulator);
 
 ### Events
 
-The [`Demodulator`](../src/demod/demodulator.ts) class can dispatch `stereo-status` events. Those events have a `detail` property that contains a boolean value that indicates if the current signal is in stereo or not. This event is dispatched whenever the signal switches from stereo to mono, or vice versa.
+The [`Demodulator`](../src/demod/empty-demodulator.ts) class can dispatch `stereo-status` events. Those events have a `detail` property that contains a boolean value that indicates if the current signal is in stereo or not. This event is dispatched whenever the signal switches from stereo to mono, or vice versa.
 
 ```typescript
 demodulator.addEventListener("stereo-status", onStereoStatus);
@@ -363,7 +363,7 @@ function onStereoStatus(e) {
 
 ### Set the parameters
 
-The [`Demodulator`](../src/demod/demodulator.ts) object has multiple methods that let you change its parameters and also see their current values. You can call those methods whether the radio is currently playing or not.
+The [`Demodulator`](../src/demod/empty-demodulator.ts) object has multiple methods that let you change its parameters and also see their current values. You can call those methods whether the radio is currently playing or not.
 
 #### Mode
 
@@ -438,7 +438,7 @@ By default, the volume is `0`.
 
 ### Use a different output for the demodulator
 
-By default, the demodulator sends the demodulated audio to an [`AudioPlayer`](../src/players/audioplayer.ts) class, which will play this audio on your speakers or headphones. If you want to do something different with the audio, you can provide your own implementation of the [`Player`](../src/demod/player.ts) interface and pass it as an argument to the [`Demodulator`](../src/demod/demodulator.ts) constructor.
+By default, the demodulator sends the demodulated audio to an [`AudioPlayer`](../src/players/audioplayer.ts) class, which will play this audio on your speakers or headphones. If you want to do something different with the audio, you can provide your own implementation of the [`Player`](../src/demod/player.ts) interface and pass it as an argument to the [`Demodulator`](../src/demod/empty-demodulator.ts) constructor.
 
 The [`Player`](../src/demod/player.ts) interface has one property, `sampleRate`, which contains the sample rate that the class expects to receive in its `play()` method.
 
@@ -495,7 +495,7 @@ The high-level API has some additional functionalities that can help you build y
 
 ### Use several sample receivers at once
 
-Sometimes you may want the [`Radio`](../src/radio/radio.ts) to send samples to more than one [`SampleReceiver`](../src/radio/sample_receiver.ts). For example, the [`Radio Receiver`](https://github.com/jtarrio/radioreceiver) application demodulates the radio signals with the [`Demodulator`](../src/demod/demodulator.ts) at the same time that it computes their frequency spectrum using another [`SampleReceiver`](../src/radio/sample_receiver.ts).
+Sometimes you may want the [`Radio`](../src/radio/radio.ts) to send samples to more than one [`SampleReceiver`](../src/radio/sample_receiver.ts). For example, the [`Radio Receiver`](https://github.com/jtarrio/radioreceiver) application demodulates the radio signals with the [`Demodulator`](../src/demod/empty-demodulator.ts) at the same time that it computes their frequency spectrum using another [`SampleReceiver`](../src/radio/sample_receiver.ts).
 
 The application achieves this with a [`CompositeReceiver`](../src/radio/sample_receiver.ts). Every time one of the methods of the [`CompositeReceiver`](../src/radio/sample_receiver.ts) object is called, it will call the same method in every component receiver.
 

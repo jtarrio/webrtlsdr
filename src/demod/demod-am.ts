@@ -17,7 +17,7 @@ import { AMDemodulator } from "../dsp/demodulators";
 import { FrequencyShifter, FIRFilter } from "../dsp/filters";
 import { getPower } from "../dsp/power";
 import { ComplexDownsampler } from "../dsp/resamplers";
-import { Configurator, Demodulated, Demod, registerDemod } from "./modes";
+import { Configurator, Demod, Demodulated } from "./modes";
 
 /** Mode parameters for AM. */
 export type ModeAM = { scheme: "AM"; bandwidth: number; squelch: number };

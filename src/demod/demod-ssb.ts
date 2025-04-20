@@ -17,7 +17,7 @@ import { Sideband, SSBDemodulator } from "../dsp/demodulators";
 import { FrequencyShifter, AGC, FIRFilter } from "../dsp/filters";
 import { getPower } from "../dsp/power";
 import { ComplexDownsampler } from "../dsp/resamplers";
-import { Configurator, Demodulated, Demod, registerDemod } from "./modes";
+import { Configurator, Demod, Demodulated } from "./modes";
 
 /** Mode parameters for SSB. */
 export type ModeSSB = {

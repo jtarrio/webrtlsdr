@@ -17,7 +17,7 @@ import { FMDemodulator } from "../dsp/demodulators";
 import { FIRFilter, FrequencyShifter } from "../dsp/filters";
 import { getPower } from "../dsp/power";
 import { ComplexDownsampler } from "../dsp/resamplers";
-import { Configurator, Demodulated, Demod, registerDemod } from "./modes";
+import { Configurator, Demod, Demodulated } from "./modes";
 
 /** Mode parameters for NBFM. */
 export type ModeNBFM = { scheme: "NBFM"; maxF: number; squelch: number };

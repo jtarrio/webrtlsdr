@@ -17,7 +17,7 @@ import { FMDemodulator, StereoSeparator } from "../dsp/demodulators";
 import { FrequencyShifter, Deemphasizer, FIRFilter } from "../dsp/filters";
 import { getPower } from "../dsp/power";
 import { ComplexDownsampler, RealDownsampler } from "../dsp/resamplers";
-import { Configurator, Demodulated, Demod, registerDemod } from "./modes";
+import { Configurator, Demod, Demodulated } from "./modes";
 
 /** Mode parameters for WBFM. */
 export type ModeWBFM = { scheme: "WBFM"; stereo: boolean };
@@ -53,7 +53,6 @@ export class DemodWBFM implements Demod<ModeWBFM> {
    * @param samplesI The I components of the samples.
    * @param samplesQ The Q components of the samples.
    * @param freqOffset The offset of the signal in the samples.
-   * @param inStereo Whether to try decoding the stereo signal.
    * @returns The demodulated audio signal.
    */
   demodulate(
