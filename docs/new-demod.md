@@ -204,7 +204,7 @@ You can build your own WBFM demodulator that uses the output of stage 1 to extra
 
 You can even register it as `WBFM` and it will replace the original `WBFM` demodulator.
 
-### Example
+### Example 1
 
 ```typescript
 export class DemodWBFMWithDecoder implements Demod<ModeWBFM> {
@@ -243,4 +243,51 @@ export class DemodWBFMWithDecoder implements Demod<ModeWBFM> {
     return o2;
   }
 }
+
+registerDemod("WBFM", DemodWBFMWithDecoder, ConfigWBFM);
+```
+
+### Example 2
+
+```typescript
+export function DemodWBFMWithParam(param: number): DemodConstructor<ModeWBFM> {
+  return class implements Demod<ModeWBFM> {
+    constructor(inRate: number, outRate: number, private mode: ModeWBFM) {
+      let interRate = Math.min(inRate, 336000);
+      this.stage1 = new DemodWBFMStage1(inRate, interRate, mode);
+      this.myDecoder = new MyDecoder(param, interRate, mode);
+      this.stage2 = new DemodWBFMStage2(interRate, outRate, mode);
+    }
+
+    private stage1: DemodWBFMStage1;
+    private myDecoder: MyDecoder;
+    private stage2: DemodWBFMStage2;
+
+    getMode(): ModeWBFM {
+      return this.mode;
+    }
+
+    setMode(mode: ModeWBFM) {
+      this.mode = mode;
+      this.stage1.setMode(mode);
+      this.myDecoder.setMode(mode);
+      this.stage2.setMode(mode);
+    }
+
+    demodulate(
+      samplesI: Float32Array,
+      samplesQ: Float32Array,
+      freqOffset: number
+    ): Demodulated {
+      let o1 = this.stage1.demodulate(samplesI, samplesQ, freqOffset);
+      this.myDecoder.decode(o1.left);
+      let o2 = this.stage2.demodulate(o1.left);
+
+      o2.snr = o1.snr;
+      return o2;
+    }
+  };
+}
+
+registerDemod("WBFM", DemodWBFMWithParam(12345), ConfigWBFM);
 ```

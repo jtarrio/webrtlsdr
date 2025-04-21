@@ -72,14 +72,14 @@ export type Mode = { scheme: string };
  * Registers a modulation scheme. If a modulation scheme by that name already exists, it is replaced.
  * @param name the name of the modulation scheme. Must match the content of `scheme` in the mode.
  * @param demod the constructor of the Demod class.
- * @param params the constructor of the Parameters class.
+ * @param config the constructor of the Configurator class.
  */
 export function registerDemod<M extends Mode>(
   name: M["scheme"],
   demod: DemodConstructor<M>,
-  params: ParametersConstructor<M>
+  config: ConfigConstructor<M>
 ) {
-  registeredDemods.set(name, { demod: demod, params });
+  registeredDemods.set(name, { demod: demod, config: config });
 }
 
 /** Unregisters a modulation scheme. */
@@ -95,7 +95,7 @@ export function getSchemes(): Array<string> {
 /** Returns the default mode for the given scheme name. */
 export function getMode(scheme: string): Mode {
   let reg = getRegisteredDemod(scheme);
-  return new reg.params(scheme).mode;
+  return new reg.config(scheme).mode;
 }
 
 /** Returns a Scheme object for the given mode. */
@@ -113,7 +113,7 @@ export function modeParameters<M extends Mode>(mode: M): Configurator<M>;
 export function modeParameters(scheme: string): Configurator<Mode>;
 export function modeParameters(mode: Mode | string): Configurator<Mode> {
   let reg = getRegisteredDemod(mode);
-  return new reg.params(mode);
+  return new reg.config(mode);
 }
 
 /** A base for classes that inspect and modify a mode parameters object. */
@@ -172,20 +172,20 @@ export abstract class Configurator<M extends Mode> {
 }
 
 /** The type for a constructor of a Scheme object. */
-type DemodConstructor<M extends Mode> = new (
+export type DemodConstructor<M extends Mode> = new (
   inRate: number,
   outRate: number,
   mode: M
 ) => Demod<M>;
 
-/** The type for a constructor of a Parameters object. */
-type ParametersConstructor<M extends Mode> = new (
+/** The type for a constructor of a Configurator object. */
+export type ConfigConstructor<M extends Mode> = new (
   base: M | string
 ) => Configurator<M>;
 
 type RegisteredDemod = {
   demod: DemodConstructor<any>;
-  params: ParametersConstructor<any>;
+  config: ConfigConstructor<any>;
 };
 var registeredDemods = new Map<string, RegisteredDemod>();
 
