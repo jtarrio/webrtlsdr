@@ -4,7 +4,7 @@ If you want to implement your own demodulator, you can use Web RTL-SDR's built-i
 
 The DSP library operates on blocks of samples stored in `Float32Array`s with values normally ranging between -1 and 1.
 
-Some functions produce blocks of I/Q samples; those are stored in a pair of `Float32Array`s, with the first element holding the "I" components of the samples and the second element holding their corresponding "Q" components.
+Some functions produce blocks of I/Q samples; those are stored in an array of two `Float32Array`s, with the first element holding the "I" components of the samples and the second element holding their corresponding "Q" components.
 
 ## Buffers
 
