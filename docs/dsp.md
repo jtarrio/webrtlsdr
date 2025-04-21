@@ -69,7 +69,7 @@ rb.copyTo(latest);
 
 ### FIR Filters
 
-The [`dsp/coefficients.ts`](../src/dsp/coefficients.ts) file contains a `makeLowPassKernel` function that returns a low-pass filter kernel with a Hamming window.
+The [`dsp/coefficients.ts`](../src/dsp/coefficients.ts) file contains a `makeLowPassKernel()` function that returns a low-pass filter kernel with a Hamming window.
 
 The [`dsp/filters.ts`](../src/dsp/filters.ts) file contains a `FIRFilter` class that lets you apply an arbitrary filter kernel via convolution. You can use it to filter a `Float32Array` in place or to extract individual filtered samples.
 
@@ -93,6 +93,31 @@ lowpass.loadSamples(samples2); // Loads the content of `samples2` in the filter
 let output = new Float32Array(samples2.length / 2);
 for (let i = 0; i < output.length; i++) {
   output[i] = lowpass.get(i * 2);
+}
+```
+
+#### Hilbert transform
+
+You can also use the FIR filter to perform a Hilbert transform with the `makeHilbertKernel()` function from [`dsp/coefficients.ts`](../src/dsp/coefficients.ts).
+
+The FIR filter introduces some delay, which would make adding the transformed and original signals together a little hard. To solve this, the `FIRFilter` class provides a `getDelayed()` method. This method works as if the `FIRFilter` class had received a kernel consisting of all zeroes and a 1 in the center element, but avoids performing unnecessary convolutions.
+
+```typescript
+import { makeHilbertKernel } from "@jtarrio/webrtlsdr/dsp/coefficients";
+import { FIRFilter } from "@jtarrio/webrtlsdr/dsp/filters";
+
+const kernelLen = 151;
+let hilbert = makeHilbertKernel(kernelLen);
+let filter = new FIRFilter(hilbert);
+let delay = new FIRFilter(hilbert); // The kernel is irrelevant, but it must be the same length as the filter.
+
+let samples: [Float32Array, Float32Array] = getIqSamples();
+this.delay.loadSamples(samples[0]);
+this.filter.loadSamples(samples[1]);
+
+let out = new Float32Array(samples[0].length);
+for (let i = 0; i < out.length; ++i) {
+  out[i] = delay.getDelayed(i) + filter.get(i);
 }
 ```
 
@@ -126,8 +151,23 @@ import { FrequencyShifter } from "@jtarrio/webrtlsdr/dsp/filters";
 const sampleRate = 1024000;
 let shifter = new FrequencyShifter(sampleRate);
 
-let samples: [Float32Array, Float32Array] = getSomeIqData();
+let samples: [Float32Array, Float32Array] = getSomeIqSamples();
 shifter.inPlace(samples[0], samples[1], 1500); // Shifts every signal in `samples` up by 1500 Hz (a signal at 1000 Hz would now be at 2500 Hz).
+```
+
+## Automatic gain control
+
+The [`dsp/filters.ts`](../src/dsp/filters.ts) file contains an `AGC` class that applies gain automatically to an input signal so it will stay close to full scale. When the input signal's power stays low for over 1 second, the `AGC` class will increase the gain over time until the output reaches 90% of the available power or the maximum gain is reached. If the output power exceeds 100%, the `AGC` class will reduce the amount of gain immediately.
+
+```typescript
+import { AGC } from "@jtarrio/webrtlsdr/dsp/filters";
+
+const sampleRate = 1024000;
+const timeConstant = 3; // seconds
+let agc = new AGC(sampleRate, timeConstant);
+
+let samples: Float32Array = getSomeSamples();
+agc.inPlace(samples);
 ```
 
 ## Resampler
