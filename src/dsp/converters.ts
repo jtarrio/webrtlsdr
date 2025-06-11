@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { IqBuffer } from "./buffers";
+import { IqBuffer } from "./buffers.js";
 
 /**
  * Converts the given buffer of unsigned 8-bit samples into a pair of

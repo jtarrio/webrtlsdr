@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { SampleReceiver } from "../radio";
+import { SampleReceiver } from "../radio.js";
 
 /** A SampleReceiver that counts received samples to send a `sample-click` event periodically. */
 export class SampleCounter extends EventTarget implements SampleReceiver {

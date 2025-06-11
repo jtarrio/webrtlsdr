@@ -13,17 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { RadioError, RadioErrorType } from "../errors";
-import { R820T } from "./r820t";
-import { R828D } from "./r828d";
-import { RtlCom } from "./rtlcom";
+import { RadioError, RadioErrorType } from "../errors.js";
+import { R820T } from "./r820t.js";
+import { R828D } from "./r828d.js";
+import { RtlCom } from "./rtlcom.js";
 import {
   DirectSampling,
   RtlDevice,
   RtlDeviceProvider,
   SampleBlock,
-} from "./rtldevice";
-import { Tuner } from "./tuner";
+} from "./rtldevice.js";
+import { Tuner } from "./tuner.js";
 
 /** Known RTL2832 devices. */
 const TUNERS = [

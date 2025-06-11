@@ -14,13 +14,13 @@
 
 /** Exports the `Demodulator` class with all the demodulation schemes already registered. */
 
-export * from "./empty-demodulator";
-import { registerDemod } from "./modes";
-import { ConfigAM, DemodAM } from "./demod-am";
-import { ConfigCW, DemodCW } from "./demod-cw";
-import { ConfigNBFM, DemodNBFM } from "./demod-nbfm";
-import { ConfigSSB, DemodSSB } from "./demod-ssb";
-import { ConfigWBFM, DemodWBFM } from "./demod-wbfm";
+export * from "./empty-demodulator.js";
+import { registerDemod } from "./modes.js";
+import { ConfigAM, DemodAM } from "./demod-am.js";
+import { ConfigCW, DemodCW } from "./demod-cw.js";
+import { ConfigNBFM, DemodNBFM } from "./demod-nbfm.js";
+import { ConfigSSB, DemodSSB } from "./demod-ssb.js";
+import { ConfigWBFM, DemodWBFM } from "./demod-wbfm.js";
 
 registerDemod("WBFM", DemodWBFM, ConfigWBFM);
 registerDemod("NBFM", DemodNBFM, ConfigNBFM);

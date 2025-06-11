@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { makeLowPassKernel } from "../dsp/coefficients";
-import { FMDemodulator, StereoSeparator } from "../dsp/demodulators";
-import { FrequencyShifter, Deemphasizer, FIRFilter } from "../dsp/filters";
-import { getPower } from "../dsp/power";
-import { ComplexDownsampler, RealDownsampler } from "../dsp/resamplers";
-import { Configurator, Demod, Demodulated } from "./modes";
+import { makeLowPassKernel } from "../dsp/coefficients.js";
+import { FMDemodulator, StereoSeparator } from "../dsp/demodulators.js";
+import { FrequencyShifter, Deemphasizer, FIRFilter } from "../dsp/filters.js";
+import { getPower } from "../dsp/power.js";
+import { ComplexDownsampler, RealDownsampler } from "../dsp/resamplers.js";
+import { Configurator, Demod, Demodulated } from "./modes.js";
 
 /** Mode parameters for WBFM. */
 export type ModeWBFM = { scheme: "WBFM"; stereo: boolean };

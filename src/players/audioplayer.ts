@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Player } from "../demod/player";
+import { Player } from "../demod/player.js";
 
 /** A class to play a series of sample buffers at a constant rate using the Web Audio API. */
 export class AudioPlayer implements Player {

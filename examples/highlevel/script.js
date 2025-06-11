@@ -1,11 +1,11 @@
-import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator";
+import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator.js";
 import {
   getMode,
   getSchemes,
   modeParameters,
-} from "@jtarrio/webrtlsdr/demod/modes";
-import { Radio } from "@jtarrio/webrtlsdr/radio";
-import { DirectSampling, RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr";
+} from "@jtarrio/webrtlsdr/demod/modes.js";
+import { Radio } from "@jtarrio/webrtlsdr/radio.js";
+import { DirectSampling, RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr.js";
 
 var elements = {};
 var demodulator;

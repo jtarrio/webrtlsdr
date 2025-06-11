@@ -1,4 +1,4 @@
-import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr";
+import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr.js";
 
 var elements = {};
 var provider;

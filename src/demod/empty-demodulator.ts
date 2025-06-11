@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Demod, Mode, getDemod, getMode, modeParameters } from "./modes";
-import { Player } from "./player";
-import { AudioPlayer } from "../players/audioplayer";
-import { SampleReceiver } from "../radio";
+import { Demod, Mode, getDemod, getMode, modeParameters } from "./modes.js";
+import { Player } from "./player.js";
+import { AudioPlayer } from "../players/audioplayer.js";
+import { SampleReceiver } from "../radio.js";
 
 /**
  * A class that takes a stream of radio samples and demodulates

@@ -13,9 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { makeHilbertKernel } from "./coefficients";
-import { FIRFilter } from "./filters";
-import { Float32Buffer } from "./buffers";
+import { makeHilbertKernel } from "./coefficients.js";
+import { FIRFilter } from "./filters.js";
+import { Float32Buffer } from "./buffers.js";
 
 /** The sideband to demodulate. */
 export enum Sideband {

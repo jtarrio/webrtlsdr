@@ -4,12 +4,13 @@
   "version": "2.0.1",
   "author": "Jacobo Tarrio <jtarrio@gmail.com>",
   "license": "Apache-2.0",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jtarrio/webrtlsdr.git"
   },
   "exports": {
-    "./*": "./dist/*.js"
+    "./*": "./dist/*"
   },
   "files": ["./dist"],
   "scripts": {
