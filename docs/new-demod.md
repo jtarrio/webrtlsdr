@@ -57,7 +57,7 @@ The [`Demodulated`](../src/demod/modes.ts) object has the following fields:
 A demodulator for a double-sideband suppressed carrier signal could look like this in Typescript:
 
 ```typescript
-import { Demod, Demodulated } from "@jtarrio/webrtlsdr/demod/modes";
+import { Demod, Demodulated } from "@jtarrio/webrtlsdr/demod/modes.js";
 
 class DemodDSB implements Demod<ModeDSB> {
   constructor(inRate: number, private outRate: number, private mode: ModeDSB) {
@@ -119,7 +119,7 @@ Additionally, if any parameters are settable (bandwidth, stereo, squelch), you m
 A configurator for the DSB scheme could look like this in TypeScript:
 
 ```typescript
-import { Configurator } from "@jtarrio/webrtlsdr/demod/modes";
+import { Configurator } from "@jtarrio/webrtlsdr/demod/modes.js";
 
 export class ConfigDSB extends Configurator<ModeDSB> {
   constructor(mode: ModeDSB | string) {
@@ -157,7 +157,7 @@ After you register the scheme, it will become available through the `getSchemes(
 #### Example
 
 ```typescript
-import { registerDemod } from "@jtarrio/webrtlsdr/demod/modes";
+import { registerDemod } from "@jtarrio/webrtlsdr/demod/modes.js";
 
 registerDemod("WBFM", DemodWBFM, ConfigWBFM);
 ```
@@ -173,8 +173,8 @@ When you import the demodulator through the `@jtarrio/webrtlsdr/demod/demodulato
 Default demodulator:
 
 ```typescript
-import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator";
-import { getSchemes } from "@jtarrio/webrtlsdr/demod/modes";
+import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator.js";
+import { getSchemes } from "@jtarrio/webrtlsdr/demod/modes.js";
 
 console.log(getSchemes()); // WBFM, NBFM, AM, USB, LSB, CW
 ```
@@ -182,8 +182,8 @@ console.log(getSchemes()); // WBFM, NBFM, AM, USB, LSB, CW
 Empty demodulator:
 
 ```typescript
-import { Demodulator } from "@jtarrio/webrtlsdr/demod/empty-demodulator";
-import { getSchemes } from "@jtarrio/webrtlsdr/demod/modes";
+import { Demodulator } from "@jtarrio/webrtlsdr/demod/empty-demodulator.js";
+import { getSchemes } from "@jtarrio/webrtlsdr/demod/modes.js";
 
 console.log(getSchemes()); // (empty)
 ```

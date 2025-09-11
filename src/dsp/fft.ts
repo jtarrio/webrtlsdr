@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Float32RingBuffer, IqBuffer } from "./buffers";
+import { Float32RingBuffer, IqBuffer } from "./buffers.js";
 
 /** Fast Fourier Transform implementation. */
 

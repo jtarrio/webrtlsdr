@@ -13,8 +13,8 @@ The API also provides a [`Demodulator`](../src/demod/demodulator.ts), which is a
 To use the high-level [`Radio`](../src/radio/radio.ts) API, import the following modules:
 
 ```typescript
-import { Radio } from "@jtarrio/webrtlsdr/radio";
-import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr";
+import { Radio } from "@jtarrio/webrtlsdr/radio.js";
+import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr.js";
 ```
 
 ### Create a `Radio`
@@ -227,7 +227,7 @@ You can create your own [`SampleReceiver`](../src/radio/sample_receiver.ts) obje
 You don't need to import anything if you use JavaScript. If you use TypeScript, you should import the [`SampleReceiver`](../src/radio/sample_receiver.ts) type:
 
 ```typescript
-import { SampleReceiver } from "@jtarrio/webrtlsdr/radio";
+import { SampleReceiver } from "@jtarrio/webrtlsdr/radio.js";
 ```
 
 ### Method `setSampleRate()`
@@ -284,7 +284,7 @@ import {
   getMode,
   getSchemes,
   modeParameters,
-} from "@jtarrio/webrtlsdr/demod/modes";
+} from "@jtarrio/webrtlsdr/demod/modes.js";
 ```
 
 The `getSchemes()` function returns the names of all available modulation schemes (WBFM, NBFM, AM, USB, LSB, and CW).
@@ -333,7 +333,7 @@ let newMode = params.mode;
 ### Create the demodulator
 
 ```typescript
-import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator";
+import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator.js";
 ```
 
 The [`Demodulator`](../src/demod/empty-demodulator.ts)'s constructor doesn't take any arguments.
@@ -500,7 +500,7 @@ Sometimes you may want the [`Radio`](../src/radio/radio.ts) to send samples to m
 The application achieves this with a [`CompositeReceiver`](../src/radio/sample_receiver.ts). Every time one of the methods of the [`CompositeReceiver`](../src/radio/sample_receiver.ts) object is called, it will call the same method in every component receiver.
 
 ```typescript
-import { CompositeReceiver } from "@jtarrio/webrtlsdr/radio";
+import { CompositeReceiver } from "@jtarrio/webrtlsdr/radio.js";
 
 let demodulator = new Demodulator();
 let spectrum = new Spectrum();
@@ -539,7 +539,7 @@ This class also has a `getSpectrum()` method that takes a `Float32Array` that wi
 Each element of the populated array contains the power for that frequency bin in decibels (dB). The first half of the elements contains the positive frequency bins, and the second half contains the negative frequency bins.
 
 ```typescript
-import { Spectrum } from "@jtarrio/webrtlsdr/demod/spectrum";
+import { Spectrum } from "@jtarrio/webrtlsdr/demod/spectrum.js";
 
 let demodulator = new Demodulator();
 let spectrum = new Spectrum();

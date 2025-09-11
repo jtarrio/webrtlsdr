@@ -14,10 +14,10 @@
 
 // Continuous spectrum analyzer.
 
-import { Float32RingBuffer } from "../dsp/buffers";
-import { makeBlackmanWindow } from "../dsp/coefficients";
-import { FFT } from "../dsp/fft";
-import { SampleReceiver } from "../radio";
+import { Float32RingBuffer } from "../dsp/buffers.js";
+import { makeBlackmanWindow } from "../dsp/coefficients.js";
+import { FFT } from "../dsp/fft.js";
+import { SampleReceiver } from "../radio.js";
 
 /** A sample receiver that computes the received signal's spectrum. */
 export class Spectrum implements SampleReceiver {

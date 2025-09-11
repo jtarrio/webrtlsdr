@@ -31,10 +31,10 @@ See [the `docs` directory](docs/README.md) for the documentation, or check out t
 This program is a complete stereo FM radio receiver tuned for 88.5 MHz.
 
 ```typescript
-import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator";
-import { getMode } from "@jtarrio/webrtlsdr/demod/modes";
-import { Radio } from "@jtarrio/webrtlsdr/radio";
-import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr";
+import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator.js";
+import { getMode } from "@jtarrio/webrtlsdr/demod/modes.js";
+import { Radio } from "@jtarrio/webrtlsdr/radio.js";
+import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr.js";
 
 let demodulator = new Demodulator();
 let radio = new Radio(new RTL2832U_Provider(), demodulator);
@@ -58,7 +58,7 @@ You can also see a full example at [`examples/highlevel`](examples/highlevel/scr
 This program connects to the RTL-SDR stick, tunes to 88.5 MHz, reads 65536 samples, and closes the connection.
 
 ```typescript
-import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr";
+import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr.js";
 
 let provider = new RTL2832U_Provider();
 let device = await provider.get();

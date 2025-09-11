@@ -15,7 +15,7 @@ The DSP library tries very hard to avoid allocating memory while it's processing
 In the [`dsp/buffers.ts`](../src/dsp/buffers.ts) file, the `Float32Buffer` and `U8Buffer` classes provide pools of preallocated buffers of different types. You can request a buffer of a particular size, and the class will give you one from the pool if it has the correct size. If not, the class will allocate a buffer of the correct size, add it to the pool, and return it.
 
 ```typescript
-import { Float32Buffer, U8Buffer } from "@jtarrio/webrtlsdr/dsp/buffers";
+import { Float32Buffer, U8Buffer } from "@jtarrio/webrtlsdr/dsp/buffers.js";
 
 // Creates a pool of 3 Float32Arrays of 1024 elements.
 let f32buffer = new Float32Buffer(3, 1024);
@@ -50,7 +50,7 @@ In the [`dsp/buffers.ts`](../src/dsp/buffers.ts) file, the `Float32RingBuffer` c
 A ring buffer contains a fixed number of elements, "_N_". When you store data into it, the oldest data is overwritten with the new data. You can get up to "_N_" elements out of the ring buffer, and those will always be the latest added elements.
 
 ```typescript
-import { Float32RingBuffer } from "@jtarrio/webrtlsdr/dsp/buffers";
+import { Float32RingBuffer } from "@jtarrio/webrtlsdr/dsp/buffers.js";
 
 // Creates a 64-element ring buffer
 let rb = new Float32RingBuffer(64);
@@ -74,8 +74,8 @@ The [`dsp/coefficients.ts`](../src/dsp/coefficients.ts) file contains a `makeLow
 The [`dsp/filters.ts`](../src/dsp/filters.ts) file contains a `FIRFilter` class that lets you apply an arbitrary filter kernel via convolution. You can use it to filter a `Float32Array` in place or to extract individual filtered samples.
 
 ```typescript
-import { makeLowPassKernel } from "@jtarrio/webrtlsdr/dsp/coefficients";
-import { FIRFilter } from "@jtarrio/webrtlsdr/dsp/filters";
+import { makeLowPassKernel } from "@jtarrio/webrtlsdr/dsp/coefficients.js";
+import { FIRFilter } from "@jtarrio/webrtlsdr/dsp/filters.js";
 
 const sampleRate = 1024000;
 const cornerFreq = 75000;
@@ -103,8 +103,8 @@ You can also use the FIR filter to perform a Hilbert transform with the `makeHil
 The FIR filter introduces some delay, which would make adding the transformed and original signals together a little hard. To solve this, the `FIRFilter` class provides a `getDelayed()` method. This method works as if the `FIRFilter` class had received a kernel consisting of all zeroes and a 1 in the center element, but avoids performing unnecessary convolutions.
 
 ```typescript
-import { makeHilbertKernel } from "@jtarrio/webrtlsdr/dsp/coefficients";
-import { FIRFilter } from "@jtarrio/webrtlsdr/dsp/filters";
+import { makeHilbertKernel } from "@jtarrio/webrtlsdr/dsp/coefficients.js";
+import { FIRFilter } from "@jtarrio/webrtlsdr/dsp/filters.js";
 
 const kernelLen = 151;
 let hilbert = makeHilbertKernel(kernelLen);
@@ -126,7 +126,7 @@ for (let i = 0; i < out.length; ++i) {
 The [`dsp/filters.ts`](../src/dsp/filters.ts) file also contains a `Deemphasizer` class that implements a 1-pole low-pass IIR filter that takes a time constant (in microseconds) as its parameter.
 
 ```typescript
-import { Deemphasizer } from "@jtarrio/webrtlsdr/dsp/filters";
+import { Deemphasizer } from "@jtarrio/webrtlsdr/dsp/filters.js";
 
 const sampleRate = 1024000;
 const tc = 50; // microseconds
@@ -146,7 +146,7 @@ The [`dsp/filters.ts`](../src/dsp/filters.ts) file also contains a `DCBlocker` c
 The [`dsp/filters.ts`](../src/dsp/filters.ts) file contains a `FrequencyShifter` class that mixes an input array with a complex sinusoidal to shift the frequencies of all the signals in the input array by a given value.
 
 ```typescript
-import { FrequencyShifter } from "@jtarrio/webrtlsdr/dsp/filters";
+import { FrequencyShifter } from "@jtarrio/webrtlsdr/dsp/filters.js";
 
 const sampleRate = 1024000;
 let shifter = new FrequencyShifter(sampleRate);
@@ -160,7 +160,7 @@ shifter.inPlace(samples[0], samples[1], 1500); // Shifts every signal in `sample
 The [`dsp/filters.ts`](../src/dsp/filters.ts) file contains an `AGC` class that applies gain automatically to an input signal so it will stay close to full scale. When the input signal's power stays low for over 1 second, the `AGC` class will increase the gain over time until the output reaches 90% of the available power or the maximum gain is reached. If the output power exceeds 100%, the `AGC` class will reduce the amount of gain immediately.
 
 ```typescript
-import { AGC } from "@jtarrio/webrtlsdr/dsp/filters";
+import { AGC } from "@jtarrio/webrtlsdr/dsp/filters.js";
 
 const sampleRate = 1024000;
 const timeConstant = 3; // seconds
@@ -180,7 +180,7 @@ These classes work best when there is an integer ratio between the input and out
 import {
   ComplexDownsampler,
   RealDownsampler,
-} from "@jtarrio/webrtlsdr/dsp/resamplers";
+} from "@jtarrio/webrtlsdr/dsp/resamplers.js";
 
 const inputSampleRate = 1024000;
 const outputSampleRate = 256000;
@@ -220,7 +220,7 @@ Additionally, this file contains a `StereoSeparator` class that extracts the ste
 import {
   FMDemodulator,
   StereoSeparator,
-} from "@jtarrio/webrtlsdr/dsp/demodulators";
+} from "@jtarrio/webrtlsdr/dsp/demodulators.js";
 
 const sampleRate = 1024000;
 const maxDev = 75000;
@@ -263,8 +263,8 @@ The `FFTOutput` type is an object with the fields `real` and `imag`, both of typ
 The [`dsp/coefficients.ts`](../src/dsp/coefficients.ts) file contains an implementation of the Blackman window in the `makeBlackmanWindow()` method.
 
 ```typescript
-import { FFT } from "@jtarrio/webrtlsdr/dsp/fft";
-import { makeBlackmanWindow } from "@jtarrio/webrtlsdr/dsp/coefficients";
+import { FFT } from "@jtarrio/webrtlsdr/dsp/fft.js";
+import { makeBlackmanWindow } from "@jtarrio/webrtlsdr/dsp/coefficients.js";
 
 let fft = FFT.ofLength(1024);
 fft.setWindow(makeBlackmanWindow(fft.lenght));

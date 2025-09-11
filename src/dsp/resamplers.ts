@@ -13,9 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Float32Buffer } from "./buffers";
-import { makeLowPassKernel } from "./coefficients";
-import { FIRFilter } from "./filters";
+import { Float32Buffer } from "./buffers.js";
+import { makeLowPassKernel } from "./coefficients.js";
+import { FIRFilter } from "./filters.js";
 
 /** A class to convert the input to a lower sample rate. */
 class Downsampler {

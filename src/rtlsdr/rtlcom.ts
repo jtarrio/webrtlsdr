@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { RadioError, RadioErrorType } from "../errors";
+import { RadioError, RadioErrorType } from "../errors.js";
 
 /** Low-level communications with the RTL2832U-base dongle. */
 export class RtlCom {

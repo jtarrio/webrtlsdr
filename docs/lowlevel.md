@@ -15,7 +15,7 @@ The low-level API lets you access the RTL-SDR stick directly to perform these op
 To use the low-level API, import the `@jtarrio/webrtlsdr/rtlsdr` module:
 
 ```typescript
-import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr";
+import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr.js";
 ```
 
 ## Connect to the RTL-SDR stick
@@ -47,7 +47,7 @@ The following example has a "Start" button with an `onclick` event listener that
 ```
 
 ```typescript
-import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr";
+import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr.js";
 
 document.getElementById("startButton").addEventListener("click", onStartClick);
 

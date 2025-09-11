@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { R8xx, STD_MUX_CFGS } from "./r8xx";
-import { RtlCom } from "./rtlcom";
-import { Tuner } from "./tuner";
+import { R8xx, STD_MUX_CFGS } from "./r8xx.js";
+import { RtlCom } from "./rtlcom.js";
+import { Tuner } from "./tuner.js";
 
 /** Operations on the R828D tuner chip. */
 export class R828D extends R8xx implements Tuner {

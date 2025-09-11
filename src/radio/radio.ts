@@ -14,11 +14,11 @@
 
 /** State machine to orchestrate the RTL2832, demodulation, and audio playing. */
 
-import { U8ToFloat32 } from "../dsp/converters";
-import { RadioError, RadioErrorType } from "../errors";
-import { DirectSampling, RtlDevice, RtlDeviceProvider } from "../rtlsdr/rtldevice";
-import { Channel } from "./msgqueue";
-import { SampleReceiver } from "./sample_receiver";
+import { U8ToFloat32 } from "../dsp/converters.js";
+import { RadioError, RadioErrorType } from "../errors.js";
+import { DirectSampling, RtlDevice, RtlDeviceProvider } from "../rtlsdr/rtldevice.js";
+import { Channel } from "./msgqueue.js";
+import { SampleReceiver } from "./sample_receiver.js";
 
 /** A message sent to the state machine. */
 type Message =
