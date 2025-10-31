@@ -16,7 +16,11 @@
 
 import { U8ToFloat32 } from "../dsp/converters.js";
 import { RadioError, RadioErrorType } from "../errors.js";
-import { DirectSampling, RtlDevice, RtlDeviceProvider } from "../rtlsdr/rtldevice.js";
+import {
+  DirectSampling,
+  RtlDevice,
+  RtlDeviceProvider,
+} from "../rtlsdr/rtldevice.js";
 import { Channel } from "./msgqueue.js";
 import { SampleReceiver } from "./sample_receiver.js";
 
@@ -50,12 +54,28 @@ enum State {
   PLAYING,
 }
 
+/** Options for the Radio class. */
+export type RadioOptions = {
+  /**
+   * The number of buffers to process per second.
+   *
+   * This number controls your processing latency: more buffers per second
+   * implies smaller buffers, thus smaller latency. It also increases your
+   * CPU requirements, though.
+   *
+   * The actual number of buffers per second may be slightly different to
+   * account for hardware requirements.
+   */
+  buffersPerSecond?: number;
+};
+
 /** Provides controls to play, stop, and tune the radio. */
 export class Radio extends EventTarget {
   /** @param sampleReceiver the object that will receive the radio samples. */
   constructor(
     private rtlProvider: RtlDeviceProvider,
-    private sampleReceiver: SampleReceiver
+    private sampleReceiver: SampleReceiver,
+    private options?: RadioOptions
   ) {
     super();
     this.sampleRate = 1024000;
@@ -195,7 +215,8 @@ export class Radio extends EventTarget {
               rtl,
               this.sampleReceiver,
               this,
-              this.sampleRate
+              this.sampleRate,
+              this.options
             );
             transfers.startStream();
             this.state = State.PLAYING;
@@ -283,17 +304,20 @@ export class Radio extends EventTarget {
  * transfer. In this way, there is always a stream of samples coming in.
  */
 class Transfers {
-  /** Receive this many buffers per second. */
-  private static BUFS_PER_SEC = 20;
+  /** Receive this many buffers per second by default. */
+  private static DEFAULT_BUFS_PER_SEC = 20;
 
   constructor(
     private rtl: RtlDevice,
     private sampleReceiver: SampleReceiver,
     private radio: Radio,
-    private sampleRate: number
+    private sampleRate: number,
+    options?: RadioOptions
   ) {
-    this.samplesPerBuf =
-      512 * Math.ceil(sampleRate / Transfers.BUFS_PER_SEC / 512);
+    let buffersPerSecond = options?.buffersPerSecond;
+    if (buffersPerSecond === undefined || buffersPerSecond <= 0)
+      buffersPerSecond = Transfers.DEFAULT_BUFS_PER_SEC;
+    this.samplesPerBuf = 512 * Math.ceil(sampleRate / buffersPerSecond / 512);
     this.buffersWanted = 0;
     this.buffersRunning = 0;
     this.iqConverter = new U8ToFloat32(this.samplesPerBuf);
