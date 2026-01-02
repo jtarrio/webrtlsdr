@@ -102,10 +102,11 @@ export function getMode(scheme: string): Mode {
 export function getDemod<M extends Mode>(
   inRate: number,
   outRate: number,
-  mode: M
+  mode: M,
+  options?: object
 ): Demod<M> {
   let reg = getRegisteredDemod(mode);
-  return new reg.demod(inRate, outRate, mode);
+  return new reg.demod(inRate, outRate, mode, options);
 }
 
 /** Returns accessors for the mode's or scheme's parameters. */
@@ -175,7 +176,8 @@ export abstract class Configurator<M extends Mode> {
 export type DemodConstructor<M extends Mode> = new (
   inRate: number,
   outRate: number,
-  mode: M
+  mode: M,
+  options?: object
 ) => Demod<M>;
 
 /** The type for a constructor of a Configurator object. */

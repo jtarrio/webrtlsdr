@@ -17,6 +17,18 @@ import { Player } from "./player.js";
 import { AudioPlayer } from "../players/audioplayer.js";
 import { SampleReceiver } from "../radio.js";
 
+type DemodulatorOptions = {
+  /**
+   * The player to use. If undefined, an AudioPlayer will be used.
+   */
+  player?: Player;
+  /**
+   * Options for each mode. This is an object whose keys are registered mode names
+   * and the values are objects sent to the mode constructor.
+   */
+  modeOptions?: { [key: Mode["scheme"]]: object };
+};
+
 /**
  * A class that takes a stream of radio samples and demodulates
  * it into an audio signal.
@@ -30,13 +42,24 @@ import { SampleReceiver } from "../radio.js";
  */
 export class Demodulator extends EventTarget implements SampleReceiver {
   /**
+   * @param options Options for the demodulator.
+   */
+  constructor(options?: DemodulatorOptions);
+  /**
    * @param player The player to use. If undefined, an AudioPlayer will be used.
    */
-  constructor(player?: Player) {
+  constructor(player?: Player);
+  constructor(playerOrOptions?: Player | DemodulatorOptions) {
     super();
+    const player =
+      playerOrOptions !== undefined && Object.hasOwn(playerOrOptions, "play")
+        ? (playerOrOptions as Player)
+        : (playerOrOptions as DemodulatorOptions)?.player;
+    const modeOptions = (playerOrOptions as DemodulatorOptions)?.modeOptions;
     this.inRate = 1024000;
-    this.player = player ? player : new AudioPlayer();
+    this.player = player || new AudioPlayer();
     this.squelchControl = new SquelchControl(this.player.sampleRate);
+    this.modeOptions = modeOptions || {};
     this.mode = getMode("WBFM");
     this.demod = this.getScheme(this.mode);
     this.frequencyOffset = 0;
@@ -49,6 +72,8 @@ export class Demodulator extends EventTarget implements SampleReceiver {
   private player: Player;
   /** Controller that silences the output if the SNR is low. */
   private squelchControl: SquelchControl;
+  /** Options for the different modes. */
+  private modeOptions: { [key: Mode["scheme"]]: object };
   /** The modulation parameters as a Mode object. */
   private mode: Mode;
   /** The demodulator class. */
@@ -103,7 +128,12 @@ export class Demodulator extends EventTarget implements SampleReceiver {
       return demod;
     }
 
-    return getDemod(this.inRate, this.player.sampleRate, mode);
+    return getDemod(
+      this.inRate,
+      this.player.sampleRate,
+      mode,
+      this.modeOptions[mode.scheme]
+    );
   }
 
   /** Changes the sample rate. */

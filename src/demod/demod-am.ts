@@ -1,3 +1,4 @@
+// Copyright 2026 Jacobo Tarrio Barreiro. All rights reserved.
 // Copyright 2014 Google Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,22 +23,43 @@ import { Configurator, Demod, Demodulated } from "./modes.js";
 /** Mode parameters for AM. */
 export type ModeAM = { scheme: "AM"; bandwidth: number; squelch: number };
 
+/** Mode options for AM. */
+export type OptionsAM = {
+  /** Number of taps for the downsampler filter. Must be an odd number. 151 by default. */
+  downsamplerTaps?: number;
+  /** Number of taps for the RF filter. Must be an odd number. 151 by default. */
+  rfTaps?: number;
+};
+
 /** A demodulator for amplitude modulated signals. */
 export class DemodAM implements Demod<ModeAM> {
   /**
    * @param inRate The sample rate of the input samples.
    * @param outRate The sample rate of the output audio.
    * @param mode The mode to use initially.
+   * @param options Options for the demodulator.
    */
-  constructor(inRate: number, private outRate: number, private mode: ModeAM) {
+  constructor(
+    inRate: number,
+    private outRate: number,
+    private mode: ModeAM,
+    options?: OptionsAM
+  ) {
+    const downsamplerTaps = options?.downsamplerTaps || 151;
+    this.rfTaps = options?.rfTaps || 151;
     this.shifter = new FrequencyShifter(inRate);
-    this.downsampler = new ComplexDownsampler(inRate, outRate, 151);
-    const kernel = makeLowPassKernel(outRate, this.mode.bandwidth / 2, 151);
+    this.downsampler = new ComplexDownsampler(inRate, outRate, downsamplerTaps);
+    const kernel = makeLowPassKernel(
+      outRate,
+      this.mode.bandwidth / 2,
+      this.rfTaps
+    );
     this.filterI = new FIRFilter(kernel);
     this.filterQ = new FIRFilter(kernel);
     this.demodulator = new AMDemodulator(outRate);
   }
 
+  private rfTaps: number;
   private shifter: FrequencyShifter;
   private downsampler: ComplexDownsampler;
   private filterI: FIRFilter;
@@ -50,7 +72,11 @@ export class DemodAM implements Demod<ModeAM> {
 
   setMode(mode: ModeAM) {
     this.mode = mode;
-    const kernel = makeLowPassKernel(this.outRate, mode.bandwidth / 2, 151);
+    const kernel = makeLowPassKernel(
+      this.outRate,
+      mode.bandwidth / 2,
+      this.rfTaps
+    );
     this.filterI.setCoefficients(kernel);
     this.filterQ.setCoefficients(kernel);
   }

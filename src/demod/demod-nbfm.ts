@@ -1,3 +1,4 @@
+// Copyright 2026 Jacobo Tarrio Barreiro. All rights reserved.
 // Copyright 2014 Google Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,22 +23,39 @@ import { Configurator, Demod, Demodulated } from "./modes.js";
 /** Mode parameters for NBFM. */
 export type ModeNBFM = { scheme: "NBFM"; maxF: number; squelch: number };
 
+/** Mode options for NBFM. */
+export type OptionsNBFM = {
+  /** Number of taps for the downsampler filter. Must be an odd number. 151 by default. */
+  downsamplerTaps?: number;
+  /** Number of taps for the RF filter. Must be an odd number. 151 by default. */
+  rfTaps?: number;
+};
+
 /** A demodulator for narrowband FM signals. */
 export class DemodNBFM implements Demod<ModeNBFM> {
   /**
    * @param inRate The sample rate of the input samples.
    * @param outRate The sample rate of the output audio.
    * @param mode The mode to use initially.
+   * @param options Options for the demodulator.
    */
-  constructor(inRate: number, private outRate: number, private mode: ModeNBFM) {
+  constructor(
+    inRate: number,
+    private outRate: number,
+    private mode: ModeNBFM,
+    options?: OptionsNBFM
+  ) {
+    const downsamplerTaps = options?.downsamplerTaps || 151;
+    this.rfTaps = options?.rfTaps || 151;
     this.shifter = new FrequencyShifter(inRate);
-    this.downsampler = new ComplexDownsampler(inRate, outRate, 151);
-    const kernel = makeLowPassKernel(outRate, mode.maxF, 151);
+    this.downsampler = new ComplexDownsampler(inRate, outRate, downsamplerTaps);
+    const kernel = makeLowPassKernel(outRate, mode.maxF, this.rfTaps);
     this.filterI = new FIRFilter(kernel);
     this.filterQ = new FIRFilter(kernel);
     this.demodulator = new FMDemodulator(mode.maxF / outRate);
   }
 
+  private rfTaps: number;
   private shifter: FrequencyShifter;
   private downsampler: ComplexDownsampler;
   private filterI: FIRFilter;
@@ -50,7 +68,7 @@ export class DemodNBFM implements Demod<ModeNBFM> {
 
   setMode(mode: ModeNBFM) {
     this.mode = mode;
-    const kernel = makeLowPassKernel(this.outRate, mode.maxF, 151);
+    const kernel = makeLowPassKernel(this.outRate, mode.maxF, this.rfTaps);
     this.filterI.setCoefficients(kernel);
     this.filterQ.setCoefficients(kernel);
     this.demodulator.setMaxDeviation(mode.maxF / this.outRate);

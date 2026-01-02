@@ -1,7 +1,7 @@
 {
   "name": "@jtarrio/webrtlsdr",
   "description": "Access RTL-SDR devices and receive and demodulate radio signals from your web application",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "author": "Jacobo Tarrio <jtarrio@gmail.com>",
   "license": "Apache-2.0",
   "repository": {

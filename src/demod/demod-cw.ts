@@ -21,8 +21,15 @@ import { Configurator, Demod, Demodulated } from "./modes.js";
 /** Mode parameters for CW. */
 export type ModeCW = { scheme: "CW"; bandwidth: number };
 
-/** Output frequency of the zero-beat CW signals. */
-const ToneFrequency = 600;
+/** Mode options for CW. */
+export type OptionsCW = {
+  /** Tone frequency of the zero-beat CW signals, in Hertz. 600 by default. */
+  toneFrequency?: number;
+  /** Number of taps for the downsampler filter. Must be an odd number. 151 by default. */
+  downsamplerTaps?: number;
+  /** Number of taps for the audio filter. Must be an odd number. 351 by default. */
+  audioTaps?: number;
+};
 
 /** A demodulator for continuous wave signals. */
 export class DemodCW implements Demod<ModeCW> {
@@ -30,22 +37,38 @@ export class DemodCW implements Demod<ModeCW> {
    * @param inRate The sample rate of the input samples.
    * @param outRate The sample rate of the output audio.
    * @param mode The mode to use initially.
+   * @param options Options for the demodulator.
    */
-  constructor(inRate: number, private outRate: number, private mode: ModeCW) {
+  constructor(
+    inRate: number,
+    private outRate: number,
+    private mode: ModeCW,
+    options?: OptionsCW
+  ) {
+    const downsamplerTaps = options?.downsamplerTaps || 151;
+    this.audioTaps = options?.audioTaps || 351;
+    const toneFrequency = options?.toneFrequency || 600;
     this.shifter = new FrequencyShifter(inRate);
-    this.downsampler = new ComplexDownsampler(inRate, outRate, 151);
-    const kernel = makeLowPassKernel(outRate, mode.bandwidth / 2, 351);
+    this.downsampler = new ComplexDownsampler(inRate, outRate, downsamplerTaps);
+    const kernel = makeLowPassKernel(
+      outRate,
+      mode.bandwidth / 2,
+      this.audioTaps
+    );
     this.filterI = new FIRFilter(kernel);
     this.filterQ = new FIRFilter(kernel);
     this.toneShifter = new FrequencyShifter(outRate);
+    this.toneFrequency = toneFrequency;
     this.agc = new AGC(outRate, 10);
   }
 
+  private audioTaps: number;
   private shifter: FrequencyShifter;
   private downsampler: ComplexDownsampler;
   private filterI: FIRFilter;
   private filterQ: FIRFilter;
   private toneShifter: FrequencyShifter;
+  private toneFrequency: number;
   private agc: AGC;
 
   getMode(): ModeCW {
@@ -54,7 +77,11 @@ export class DemodCW implements Demod<ModeCW> {
 
   setMode(mode: ModeCW) {
     this.mode = mode;
-    const kernel = makeLowPassKernel(this.outRate, mode.bandwidth / 2, 151);
+    const kernel = makeLowPassKernel(
+      this.outRate,
+      mode.bandwidth / 2,
+      this.audioTaps
+    );
     this.filterI.setCoefficients(kernel);
     this.filterQ.setCoefficients(kernel);
   }
@@ -71,7 +98,7 @@ export class DemodCW implements Demod<ModeCW> {
     this.filterI.inPlace(I);
     this.filterQ.inPlace(Q);
     let signalPower = (getPower(I, Q) * this.outRate) / this.mode.bandwidth;
-    this.toneShifter.inPlace(I, Q, ToneFrequency);
+    this.toneShifter.inPlace(I, Q, this.toneFrequency);
     this.agc.inPlace(I);
     return {
       left: I,

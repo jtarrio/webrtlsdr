@@ -1,3 +1,4 @@
+// Copyright 2026 Jacobo Tarrio Barreiro. All rights reserved.
 // Copyright 2014 Google Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,6 +27,16 @@ export type ModeSSB = {
   squelch: number;
 };
 
+/** Mode options for SSB. */
+export type OptionsSSB = {
+  /** Number of taps for the downsampler filter. Must be an odd number. 151 by default. */
+  downsamplerTaps?: number;
+  /** Number of taps for the RF filter. Must be an odd number. 151 by default. */
+  rfTaps?: number;
+  /** Number of taps for the Hilbert filter. Must be an odd number. 151 by default. */
+  hilbertTaps?: number;
+};
+
 /** A demodulator for single-sideband modulated signals. */
 export class DemodSSB implements Demod<ModeSSB> {
   /**
@@ -33,17 +44,31 @@ export class DemodSSB implements Demod<ModeSSB> {
    * @param outRate The sample rate of the output audio.
    * @param mode The mode to use initially.
    */
-  constructor(inRate: number, private outRate: number, private mode: ModeSSB) {
+  constructor(
+    inRate: number,
+    private outRate: number,
+    private mode: ModeSSB,
+    options?: OptionsSSB
+  ) {
+    const downsamplerTaps = options?.downsamplerTaps || 151;
+    this.rfTaps = options?.rfTaps || 151;
+    const hilbertTaps = options?.hilbertTaps || 151;
     this.shifter = new FrequencyShifter(inRate);
-    this.downsampler = new ComplexDownsampler(inRate, outRate, 151);
-    const kernel = makeLowPassKernel(this.outRate, mode.bandwidth / 2, 151);
+    this.downsampler = new ComplexDownsampler(inRate, outRate, downsamplerTaps);
+    const kernel = makeLowPassKernel(
+      this.outRate,
+      mode.bandwidth / 2,
+      this.rfTaps
+    );
     this.filter = new FIRFilter(kernel);
     this.demodulator = new SSBDemodulator(
-      mode.scheme == "USB" ? Sideband.Upper : Sideband.Lower
+      mode.scheme == "USB" ? Sideband.Upper : Sideband.Lower,
+      hilbertTaps
     );
     this.agc = new AGC(outRate, 3);
   }
 
+  private rfTaps: number;
   private shifter: FrequencyShifter;
   private downsampler: ComplexDownsampler;
   private filter: FIRFilter;
@@ -56,7 +81,11 @@ export class DemodSSB implements Demod<ModeSSB> {
 
   setMode(mode: ModeSSB) {
     this.mode = mode;
-    const kernel = makeLowPassKernel(this.outRate, mode.bandwidth / 2, 151);
+    const kernel = makeLowPassKernel(
+      this.outRate,
+      mode.bandwidth / 2,
+      this.rfTaps
+    );
     this.filter.setCoefficients(kernel);
   }
 
