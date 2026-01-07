@@ -30,8 +30,8 @@ export class RadioError extends Error {
       options !== undefined
         ? options
         : typeof typeOrOptions === "object"
-          ? typeOrOptions
-          : undefined
+        ? typeOrOptions
+        : undefined
     );
     if (typeof typeOrOptions === "number") {
       this.type = typeOrOptions;
@@ -48,7 +48,6 @@ export enum RadioErrorType {
   UnsupportedDevice,
   UsbTransferError,
   TunerError,
-  DemodulationError,
 }
 
 type RadioErrorOptions = {

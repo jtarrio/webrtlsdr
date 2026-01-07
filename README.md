@@ -6,7 +6,7 @@ Access RTL-SDR devices and receive and demodulate radio signals from your web ap
 
 This is a library that provides functions to access and operate an RTL-SDR device from a web application, receive radio signals, demodulate them, and play it through the computer's speakers or headphones.
 
-It provides access at several levels, from low-level operations on the RTL-SDR stick itself to a full reception/demodulation pipeline.
+It provides low-level access to the RTL-SDR stick, and also uses the [Signals library](https://github.com/jtarrio/signals) to provide a full reception/demodulation pipeline.
 
 This library powers Radio Receiver, my browser-based SDR application, which you can try at [radio.ea1iti.es](https://radio.ea1iti.es).
 
@@ -31,13 +31,12 @@ See [the `docs` directory](docs/README.md) for the documentation, or check out t
 This program is a complete stereo FM radio receiver tuned for 88.5 MHz.
 
 ```typescript
-import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator.js";
-import { getMode } from "@jtarrio/webrtlsdr/demod/modes.js";
-import { Radio } from "@jtarrio/webrtlsdr/radio.js";
-import { RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr.js";
+import { Demodulator } from "@jtarrio/signals/demod/demodulator.js";
+import { getMode } from "@jtarrio/signals/demod/modes.js";
+import { Radio, RtlProvider } from "@jtarrio/webrtlsdr/radio.js";
 
 let demodulator = new Demodulator();
-let radio = new Radio(new RTL2832U_Provider(), demodulator);
+let radio = new Radio(new RtlProvider(), demodulator);
 
 radio.setFrequency(88500000);
 demodulator.setVolume(1);

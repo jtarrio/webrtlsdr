@@ -167,7 +167,9 @@ export class RtlCom {
       return new ArrayBuffer(length);
     }
     throw new RadioError(
-      `USB bulk read failed length 0x${length.toString(16)} status=${result.status}`,
+      `USB bulk read failed length 0x${length.toString(16)} status=${
+        result.status
+      }`,
       RadioErrorType.UsbTransferError
     );
   }
@@ -212,7 +214,9 @@ export class RtlCom {
       );
     } catch (e) {
       throw new RadioError(
-        `setReg failed block=0x${block.toString(16)} reg=${reg.toString(16)} value=${value.toString(16)} length=${length}`,
+        `setReg failed block=0x${block.toString(16)} reg=${reg.toString(
+          16
+        )} value=${value.toString(16)} length=${length}`,
         RadioErrorType.UsbTransferError,
         { cause: e }
       );
@@ -235,7 +239,9 @@ export class RtlCom {
       return this._bufferToNumber(await this._readCtrlMsg(reg, block, length));
     } catch (e) {
       throw new RadioError(
-        `getReg failed block=0x${block.toString(16)} reg=${reg.toString(16)} length=${length}`,
+        `getReg failed block=0x${block.toString(16)} reg=${reg.toString(
+          16
+        )} length=${length}`,
         RadioErrorType.UsbTransferError,
         { cause: e }
       );
@@ -253,7 +259,9 @@ export class RtlCom {
       await this._writeCtrlMsg(reg, block | RtlCom.WRITE_FLAG, buffer);
     } catch (e) {
       throw new RadioError(
-        `setRegBuffer failed block=0x${block.toString(16)} reg=${reg.toString(16)}`,
+        `setRegBuffer failed block=0x${block.toString(16)} reg=${reg.toString(
+          16
+        )}`,
         RadioErrorType.UsbTransferError,
         { cause: e }
       );
@@ -276,7 +284,9 @@ export class RtlCom {
       return this._readCtrlMsg(reg, block, length);
     } catch (e) {
       throw new RadioError(
-        `getRegBuffer failed block=0x${block.toString(16)} reg=${reg.toString(16)} length=${length}`,
+        `getRegBuffer failed block=0x${block.toString(16)} reg=${reg.toString(
+          16
+        )} length=${length}`,
         RadioErrorType.UsbTransferError,
         { cause: e }
       );
@@ -350,9 +360,12 @@ export class RtlCom {
       index: index,
     };
     let result = await this.device.controlTransferIn(ti, Math.max(8, length));
-    if (result.status == "ok") return result.data!.buffer.slice(0, length) as ArrayBuffer;
+    if (result.status == "ok")
+      return result.data!.buffer.slice(0, length) as ArrayBuffer;
     throw new RadioError(
-      `USB read failed value=0x${value.toString(16)} index=0x${index.toString(16)} status=${result.status}`,
+      `USB read failed value=0x${value.toString(16)} index=0x${index.toString(
+        16
+      )} status=${result.status}`,
       RadioErrorType.UsbTransferError
     );
   }
@@ -378,7 +391,9 @@ export class RtlCom {
     let result = await this.device.controlTransferOut(ti, buffer);
     if (result.status == "ok") return;
     throw new RadioError(
-      `USB write failed value=0x${value.toString(16)} index=0x${index.toString(16)} status=${result.status}`,
+      `USB write failed value=0x${value.toString(16)} index=0x${index.toString(
+        16
+      )} status=${result.status}`,
       RadioErrorType.UsbTransferError
     );
   }

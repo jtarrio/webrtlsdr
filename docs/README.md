@@ -4,7 +4,7 @@ Web RTL-SDR is a TypeScript library that lets you access RTL-SDR devices from a 
 
 You can use Web RTL-SDR from JavaScript and TypeScript applications.
 
-Web RTL-SDR provides a high-level API that lets you write a stereo FM demodulator in less than 10 lines of JavaScript and also a low-level API that lets you manipulate the RTL-SDR stick directly.
+Web RTL-SDR provides a low-level API that lets you manipulate the RTL-SDR stick directly, and a high-level API that lets you write a stereo FM demodulator in less than 10 lines of JavaScript through the [Signals library](https://github.com/jtarrio/signals/).
 
 ## Requirements
 
@@ -28,5 +28,7 @@ You can use the low-level API if you need to access the RTL-SDR stick directly, 
 
 - Accessing the RTL-SDR stick through the [low-level API](lowlevel.md)
 - Creating a radio demodulator through the [high-level API](highlevel.md)
-- Writing a [new modulation scheme](new-demod.md) for the high-level API
-- Using the [built-in DSP library](dsp.md)
+
+## Migrating from old versions
+
+- [Migrating from version 2 to version 3](migrate-2-to-3.md)

@@ -1,7 +1,7 @@
 {
   "name": "@jtarrio/webrtlsdr",
   "description": "Access RTL-SDR devices and receive and demodulate radio signals from your web application",
-  "version": "2.0.5",
+  "version": "3.0.0",
   "author": "Jacobo Tarrio <jtarrio@gmail.com>",
   "license": "Apache-2.0",
   "repository": {
@@ -9,8 +9,7 @@
     "url": "git+https://github.com/jtarrio/webrtlsdr.git"
   },
   "exports": {
-    "./*.js": "./dist/*.js",
-    "./*": "./dist/*.js"
+    "./*.js": "./dist/*.js"
   },
   "files": ["./dist"],
   "scripts": {
@@ -20,6 +19,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@types/w3c-web-usb": "^1.0.10"
+    "@types/w3c-web-usb": "^1.0.10",
+    "@jtarrio/signals": "^0.9.2"
   }
 }

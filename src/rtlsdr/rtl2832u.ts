@@ -74,10 +74,7 @@ export class RTL2832U implements RtlDevice {
   /** The number of bytes for each sample. */
   static BYTES_PER_SAMPLE = 2;
 
-  private constructor(
-    private com: RtlCom,
-    private tuner: Tuner
-  ) {
+  private constructor(private com: RtlCom, private tuner: Tuner) {
     this.centerFrequency = 0;
     this.ppm = 0;
     this.gain = null;

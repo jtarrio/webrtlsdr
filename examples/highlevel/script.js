@@ -1,11 +1,14 @@
-import { Demodulator } from "@jtarrio/webrtlsdr/demod/demodulator.js";
+import { Demodulator } from "@jtarrio/signals/demod/demodulator.js";
 import {
   getMode,
   getSchemes,
   modeParameters,
-} from "@jtarrio/webrtlsdr/demod/modes.js";
-import { Radio } from "@jtarrio/webrtlsdr/radio.js";
-import { DirectSampling, RTL2832U_Provider } from "@jtarrio/webrtlsdr/rtlsdr.js";
+} from "@jtarrio/signals/demod/modes.js";
+import {
+  Radio,
+  RtlProvider,
+} from "@jtarrio/webrtlsdr/radio.js";
+import { DirectSampling } from "@jtarrio/webrtlsdr/rtlsdr.js";
 
 var elements = {};
 var demodulator;
@@ -15,13 +18,13 @@ var knownModes = {};
 async function main() {
   // Create the demodulator and radio and connect them.
   demodulator = new Demodulator();
-  radio = new Radio(new RTL2832U_Provider(), demodulator);
+  radio = new Radio(new RtlProvider(), demodulator);
 
   // Set the radio and demodulator parameters.
-  radio.setFrequency(88500000);
-  radio.setDirectSamplingMethod(DirectSampling.Off);
-  radio.setFrequencyCorrection(0);
-  radio.setGain(null);
+  await radio.setFrequency(88500000);
+  await radio.setDirectSamplingMethod(DirectSampling.Off);
+  await radio.setFrequencyCorrection(0);
+  await radio.setGain(null);
   demodulator.setFrequencyOffset(0);
   demodulator.setVolume(1);
   demodulator.setMode(getMode("WBFM"));
@@ -77,7 +80,7 @@ function onAutoGainBoxChange() {
   if (checked) {
     radio.setGain(null);
   } else {
-    onGainChange();
+    onGainInputChange();
   }
 }
 
