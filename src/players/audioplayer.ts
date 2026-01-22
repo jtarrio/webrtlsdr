@@ -14,18 +14,30 @@
 
 import { Player } from "../demod/player.js";
 
+/** Options for the AudioPlayer constructor. */
+export type PlayerOptions = {
+  /**
+   * A function that returns the AudioContext instance to use for the player.
+   * If not specified, the default AudioContext constructor is used.
+   */
+  newAudioContext?: () => AudioContext;
+};
+
 /** A class to play a series of sample buffers at a constant rate using the Web Audio API. */
 export class AudioPlayer implements Player {
   private static OUT_RATE = 48000;
   private static TIME_BUFFER = 0.05;
 
-  constructor() {
+  constructor(options?: PlayerOptions) {
+    this.newAudioContext =
+      options?.newAudioContext || (() => new AudioContext());
     this.lastPlayedAt = -1;
     this.ac = undefined;
     this.gainNode = undefined;
     this.gain = 0;
   }
 
+  private newAudioContext: () => AudioContext;
   private lastPlayedAt: number;
   private ac: AudioContext | undefined;
   private gainNode: GainNode | undefined;
@@ -38,7 +50,7 @@ export class AudioPlayer implements Player {
    */
   play(leftSamples: Float32Array, rightSamples: Float32Array) {
     if (this.ac === undefined || this.gainNode === undefined) {
-      this.ac = new AudioContext();
+      this.ac = this.newAudioContext();
       this.gainNode = this.ac.createGain();
       this.gainNode.gain.value = this.gain;
       this.gainNode.connect(this.ac.destination);
@@ -46,7 +58,7 @@ export class AudioPlayer implements Player {
     const buffer = this.ac.createBuffer(
       2,
       leftSamples.length,
-      AudioPlayer.OUT_RATE
+      AudioPlayer.OUT_RATE,
     );
     buffer.getChannelData(0).set(leftSamples);
     buffer.getChannelData(1).set(rightSamples);
@@ -55,7 +67,7 @@ export class AudioPlayer implements Player {
     source.connect(this.gainNode);
     this.lastPlayedAt = Math.max(
       this.lastPlayedAt + leftSamples.length / AudioPlayer.OUT_RATE,
-      this.ac.currentTime + AudioPlayer.TIME_BUFFER
+      this.ac.currentTime + AudioPlayer.TIME_BUFFER,
     );
     source.start(this.lastPlayedAt);
   }
