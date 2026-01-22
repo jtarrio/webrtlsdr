@@ -31,12 +31,23 @@ const TUNERS = [
   { vendorId: 0x0bda, productId: 0x2838 },
 ];
 
+/** Options for the RTL2832U_Provider constructor. */
+export type RtlOptions = {
+  /**
+   * An implementation of the WebUSB USB interface to use to talk to the RTL-SDR device.
+   * If not specified, `navigator.usb` is used.
+   */
+  webusb?: USB;
+};
+
 /** Class that returns an open RTL2832U device. */
 export class RTL2832U_Provider implements RtlDeviceProvider {
-  constructor() {
+  constructor(options?: RtlOptions) {
+    this.webusb = options?.webusb || navigator.usb;
     this.device = undefined;
   }
 
+  private webusb?: USB;
   private device?: USBDevice;
 
   async get(): Promise<RtlDevice> {
@@ -48,19 +59,19 @@ export class RTL2832U_Provider implements RtlDeviceProvider {
   }
 
   private async getDevice(): Promise<USBDevice> {
-    if (navigator.usb === undefined) {
+    if (this.webusb === undefined) {
       throw new RadioError(
-        `This browser does not support the HTML5 USB API`,
-        RadioErrorType.NoUsbSupport
+        `This browser does not support the WebUSB API`,
+        RadioErrorType.NoUsbSupport,
       );
     }
     try {
-      return navigator.usb.requestDevice({ filters: TUNERS });
+      return this.webusb.requestDevice({ filters: TUNERS });
     } catch (e) {
       throw new RadioError(
         `No device was selected`,
         RadioErrorType.NoDeviceSelected,
-        { cause: e }
+        { cause: e },
       );
     }
   }
@@ -74,7 +85,10 @@ export class RTL2832U implements RtlDevice {
   /** The number of bytes for each sample. */
   static BYTES_PER_SAMPLE = 2;
 
-  private constructor(private com: RtlCom, private tuner: Tuner) {
+  private constructor(
+    private com: RtlCom,
+    private tuner: Tuner,
+  ) {
     this.centerFrequency = 0;
     this.ppm = 0;
     this.gain = null;
@@ -178,7 +192,7 @@ export class RTL2832U implements RtlDevice {
       await com.releaseInterface();
       throw new RadioError(
         "Sorry, your USB dongle has an unsupported tuner chip.",
-        RadioErrorType.UnsupportedDevice
+        RadioErrorType.UnsupportedDevice,
       );
     }
     return tuner;
