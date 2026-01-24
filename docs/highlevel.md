@@ -438,7 +438,15 @@ By default, the volume is `0`.
 
 ### Use a different output for the demodulator
 
-By default, the demodulator sends the demodulated audio to an [`AudioPlayer`](../src/players/audioplayer.ts) class, which will play this audio on your speakers or headphones. If you want to do something different with the audio, you can provide your own implementation of the [`Player`](../src/demod/player.ts) interface and pass it as an argument to the [`Demodulator`](../src/demod/empty-demodulator.ts) constructor.
+By default, the demodulator sends the demodulated audio to an [`AudioPlayer`](../src/players/audioplayer.ts) class, which will play this audio on your speakers or headphones. If you want to do something different with the audio, you can provide options to the [`AudioPlayer`](../src/players/audioplayer.ts) to modify its behavior, or you can provide your own implementation of the [`Player`](../src/demod/player.ts) interface and pass it in the options for the [`Demodulator`](../src/demod/empty-demodulator.ts) constructor.
+
+#### Options for `AudioPlayer`
+
+The [`AudioPlayer`](../src/players/audioplayer.ts) class receives an optional `options` argument, which may contain the following fields:
+
+- `newAudioContext`: a function that returns an `AudioContext`.
+
+#### Implementing the `Player` interface
 
 The [`Player`](../src/demod/player.ts) interface has one property, `sampleRate`, which contains the sample rate that the class expects to receive in its `play()` method.
 
