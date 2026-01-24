@@ -65,6 +65,12 @@ async function onStartClick() {
 
 To see the effect of not reusing the [`RTL2832U_Provider`](../src/rtlsdr/rtl2832u.ts) object, remove the `if (!provider)` statement and then click the "Start" button multiple times. The program will ask for confirmation every time.
 
+### Provider options
+
+You can pass an `options` argument to the [`RTL2832U_Provider`](../src/rtlsdr/rtl2832u.ts) class constructor. This argument is an object that may contain the following fields:
+
+- `webusb`: an implementation of the Web USB interface. This option is useful if you are using Web RTL-SDR from node.js or some other environment that doesn't provide a `navigator.usb` object.
+
 ## Set the RTL-SDR stick parameters
 
 The [`RtlDevice`](../src/rtlsdr/rtldevice.ts) object returned by [`RTL2832U_Provider`](../src/rtlsdr/rtl2832u.ts) has multiple methods that let you change the RTL-SDR device's parameters and also see their current values.
