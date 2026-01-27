@@ -28,6 +28,7 @@ You can use the low-level API if you need to access the RTL-SDR stick directly, 
 
 - Accessing the RTL-SDR stick through the [low-level API](lowlevel.md)
 - Creating a radio demodulator through the [high-level API](highlevel.md)
+- Test your application [using a simulated RTL-SDR stick](fakertl.md)
 
 ## Migrating from old versions
 
