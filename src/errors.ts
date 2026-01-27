@@ -50,6 +50,6 @@ export enum RadioErrorType {
   TunerError,
 }
 
-type RadioErrorOptions = {
+export type RadioErrorOptions = {
   cause?: any;
 };
