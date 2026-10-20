@@ -365,8 +365,14 @@ export class RtlCom {
       index: index,
     };
     let result = await this.device.controlTransferIn(ti, Math.max(8, length));
-    if (result.status == "ok")
-      return result.data!.buffer.slice(0, length) as ArrayBuffer;
+    for (let i = 1; result.status == "stall" && i <= 5; ++i) {
+      await new Promise(r => setTimeout(r, i * 5));
+      result = await this.device.controlTransferIn(ti, Math.max(8, length));
+    }
+    if (result.status == "ok") {
+      let d = result.data!;
+      return d.buffer.slice(d.byteOffset, d.byteOffset + length) as ArrayBuffer;
+    }
     throw new RadioError(
       `USB read failed value=0x${value.toString(16)} index=0x${index.toString(
         16
@@ -394,6 +400,10 @@ export class RtlCom {
       index: index,
     };
     let result = await this.device.controlTransferOut(ti, buffer);
+    for (let i = 1; result.status == "stall" && i <= 5; ++i) {
+      await new Promise(r => setTimeout(r, i * 5));
+      result = await this.device.controlTransferOut(ti, buffer);
+    }
     if (result.status == "ok") return;
     throw new RadioError(
       `USB write failed value=0x${value.toString(16)} index=0x${index.toString(
