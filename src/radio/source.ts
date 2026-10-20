@@ -42,12 +42,14 @@ export class RtlSource implements SignalSource<RtlParameter> {
 
   private converter: U8ToFloat32;
 
-  setSampleRate(sampleRate: number): Promise<number> {
-    return this.rtl.setSampleRate(sampleRate);
+  async setSampleRate(sampleRate: number): Promise<number> {
+    await this.rtl.setSampleRate(sampleRate);
+    return sampleRate;
   }
 
-  setCenterFrequency(freq: number): Promise<number> {
-    return this.rtl.setCenterFrequency(freq);
+  async setCenterFrequency(freq: number): Promise<number> {
+    await this.rtl.setCenterFrequency(freq);
+    return freq;
   }
 
   setParameter<V>(parameter: RtlParameter, value: V): Promise<void | V> {
