@@ -60,25 +60,32 @@ export class R828D extends R8xx implements Tuner {
     }
     let actual = await super.setFrequency(freq + upconvert);
     if (this.isRtlSdrBlogV4) {
+      // Input path on Blog V4:
+      // - input 2 (HF): freq < 28.8 MHz (upconverted to 28.8-57.6 MHz via Cable 2 input)
+      // - input 1 (VHF): 28.8 MHz <= freq < 250 MHz (via Cable 1 input)
+      // - input 0 (UHF): freq >= 250 MHz (via Air input)
       let input = freq < 28800000 ? 2 : freq < 250000000 ? 1 : 0;
       if (this.input != input) {
         this.input = input;
         if (input == 0) {
+          // UHF: Cable 2 LNA off (0x06 [3]=0), Cable 1 LNA off & LNA 1 on (0x05 [6:5]=0b00)
           await this._writeRegMask(0x06, 0x00, 0x08);
           await this._writeRegMask(0x05, 0x00, 0x60);
         } else if (input == 1) {
+          // VHF: Cable 2 LNA off (0x06 [3]=0), Cable 1 LNA on (0x05 [6:5]=0b11)
           await this._writeRegMask(0x06, 0x00, 0x08);
           await this._writeRegMask(0x05, 0x60, 0x60);
         } else {
+          // HF: Cable 2 LNA on (0x06 [3]=1), Cable 1 LNA off (0x05 [6:5]=0b01)
           await this._writeRegMask(0x06, 0x08, 0x08);
           await this._writeRegMask(0x05, 0x20, 0x60);
         }
-        // Turn the upconverter on or off.
+        // RTL2832U GPIO 5 controls the hardware upconverter (active low: 0 = on for HF, 1 = off)
         await this.com.setGpioOutput(5);
         await this.com.setGpioBit(5, input == 2 ? 0 : 1);
       }
     } else {
-      // Turn cable 1 LNA off above 345MHz, on below
+      // Standard R828D: Cable 1 LNA on (0x05 [6:5]=0b11) below 345 MHz, off (0b00) above
       let input = freq > 345000000 ? 0 : 1;
       if (this.input != input) {
         this.input = input;

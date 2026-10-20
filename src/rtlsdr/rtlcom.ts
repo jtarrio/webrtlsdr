@@ -141,14 +141,17 @@ export class RtlCom {
 
   async setGpioOutput(gpio: number) {
     gpio = 1 << gpio;
+    // SYS_GPIO_DIR (0x3004): Clear bit to set direction to output
     let r = await this.getSysReg(0x3004);
     await this.setSysReg(0x3004, r & ~gpio);
+    // SYS_GPIO_OUT_EN (0x3003): Set bit to enable output driver
     r = await this.getSysReg(0x3003);
     await this.setSysReg(0x3003, r | gpio);
   }
 
   async setGpioBit(gpio: number, val: number) {
     gpio = 1 << gpio;
+    // SYS_GPIO_OUT_VAL (0x3001): Set or clear bit to drive pin high or low
     let r = await this.getSysReg(0x3001);
     r = val ? r | gpio : r & ~gpio;
     await this.setSysReg(0x3001, r);
@@ -180,11 +183,13 @@ export class RtlCom {
    * With the repeater open, the tuner can receive I2C messages.
    */
   async openI2C() {
+    // Demod Page 1, Reg 0x01: Set [3] IIC_REPEAT (0x18)
     await this.setDemodReg(1, 1, 0x18, 1);
   }
 
   /** Closes the I2C repeater. */
   async closeI2C() {
+    // Demod Page 1, Reg 0x01: Clear [3] IIC_REPEAT (0x10)
     await this.setDemodReg(1, 1, 0x10, 1);
   }
 
