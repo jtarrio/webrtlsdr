@@ -383,12 +383,16 @@ export class R8xx implements Tuner {
   private async _getPllLock() {
     let firstTry = true;
     while (true) {
-      let data = await this._readRegBuffer(0x00, 3);
-      let arr = new Uint8Array(data);
-      // Read Byte 2: [6] PLL lock status (1 = locked, 0 = not locked)
-      if (arr[2] & 0b01000000) {
-        this.hasPllLock = true;
-        return;
+      for (let i = 1; i <= 4; ++i) {
+        let data = await this._readRegBuffer(0x00, 3);
+        let arr = new Uint8Array(data);
+        // Read Byte 2: [6] PLL lock status (1 = locked, 0 = not locked)
+        if (arr[2] & 0b01000000) {
+          this.hasPllLock = true;
+          return;
+        }
+        // Wait 1, 2, 3, and 4 milliseconds before retrying.
+        await new Promise(r => setTimeout(r, i));
       }
       if (!firstTry) {
         this.hasPllLock = false;
