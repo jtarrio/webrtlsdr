@@ -27,7 +27,7 @@ export class R828D extends R8xx implements Tuner {
    * @returns a promise that resolves to the tuner, or null if not present.
    */
   static async maybeInit(com: RtlCom): Promise<Tuner | null> {
-    let found = R8xx.check(com, 0x74);
+    let found = await R8xx.check(com, 0x74);
     if (!found) return null;
     let { manufacturer, model } = com.getBranding();
     let isRtlSdrBlogV4 = manufacturer == "RTLSDRBlog" && model == "Blog V4";
@@ -45,7 +45,7 @@ export class R828D extends R8xx implements Tuner {
     private isRtlSdrBlogV4: boolean
   ) {
     super(com, 0x74, isRtlSdrBlogV4 ? MUX_CFGS_RTLSDRBLOGV4 : STD_MUX_CFGS, 1);
-    this.input = 0;
+    this.input = -1;
   }
 
   /**
@@ -60,7 +60,7 @@ export class R828D extends R8xx implements Tuner {
     }
     let actual = await super.setFrequency(freq + upconvert);
     if (this.isRtlSdrBlogV4) {
-      let input = freq <= 28800000 ? 2 : freq < 250000000 ? 1 : 0;
+      let input = freq < 28800000 ? 2 : freq < 250000000 ? 1 : 0;
       if (this.input != input) {
         this.input = input;
         if (input == 0) {

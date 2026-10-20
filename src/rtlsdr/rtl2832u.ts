@@ -247,15 +247,17 @@ export class RTL2832U implements RtlDevice {
 
   async setGain(gain: number | null) {
     this.gain = gain;
-    await this.com.openI2C();
-    if (this.directSampling) {
-      this._enableRtlAgc(gain == null);
-    } else if (this.gain === null) {
-      await this.tuner.setAutoGain();
+    if (this.directSampling != DirectSampling.Off) {
+      await this._enableRtlAgc(gain == null);
     } else {
-      await this.tuner.setManualGain(this.gain);
+      await this.com.openI2C();
+      if (this.gain === null) {
+        await this.tuner.setAutoGain();
+      } else {
+        await this.tuner.setManualGain(this.gain);
+      }
+      await this.com.closeI2C();
     }
-    await this.com.closeI2C();
   }
 
   getGain(): number | null {
@@ -294,9 +296,9 @@ export class RTL2832U implements RtlDevice {
    */
   async setCenterFrequency(freq: number): Promise<number> {
     await this._maybeSetDirectSampling(freq);
-    let actualFreq;
-    if (this.directSampling) {
-      actualFreq = this._setIfFrequency(freq);
+    let actualFreq: number;
+    if (this.directSampling != DirectSampling.Off) {
+      actualFreq = await this._setIfFrequency(freq);
     } else {
       await this.com.openI2C();
       actualFreq = await this.tuner.setFrequency(freq);
@@ -332,9 +334,7 @@ export class RTL2832U implements RtlDevice {
     this.directSampling = method;
     if (useDirectSampling) {
       if (tunerWasOn) {
-        await this.com.openI2C();
         await this.tuner.close();
-        await this.com.closeI2C();
       }
       // [0] disable zero-IF input
       await this.com.setDemodReg(1, 0xb1, 0b00011010, 1);
@@ -345,9 +345,7 @@ export class RTL2832U implements RtlDevice {
       await this.com.setDemodReg(0, 0x06, regValue, 1);
       await this._enableRtlAgc(true);
     } else {
-      await this.com.openI2C();
       await this.tuner.open();
-      await this.com.closeI2C();
       let ifFreq = this.tuner.getIntermediateFrequency();
       if (ifFreq != 0) {
         await this._setIfFrequency(ifFreq);
@@ -382,9 +380,7 @@ export class RTL2832U implements RtlDevice {
 
   /** Stops the demodulator. */
   async close() {
-    await this.com.openI2C();
     await this.tuner.close();
-    await this.com.closeI2C();
     await this.com.releaseInterface();
     await this.com.close();
   }

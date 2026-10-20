@@ -154,7 +154,7 @@ export class R8xx implements Tuner {
   ) {
     this.xtalFreq = R8xx.XTAL_FREQ;
     this.hasPllLock = false;
-    this.shadowRegs = new Uint8Array();
+    this.shadowRegs = new Uint8Array(R8xx.REGISTERS);
   }
 
   /**
@@ -187,6 +187,7 @@ export class R8xx implements Tuner {
 
   /** Stops the tuner. */
   async close() {
+    await this.com.openI2C();
     // [7] power detector 1 off [6] power detector 3 off [5] filter gain [2:0] LNA power 1
     await this._writeRegMask(0x06, 0b10110001, 0xff);
     // [7] loop through off [5] lna 1 power off [4] LNA gain manual [3:0] LNA gain 3
@@ -209,6 +210,7 @@ export class R8xx implements Tuner {
     await this._writeRegMask(0x17, 0b11110100, 0xff);
     // [7] rf filter power off [4] agc pin = agc_in
     await this._writeRegMask(0x19, 0b00001100, 0xff);
+    await this.com.closeI2C();
   }
 
   /** Sets the tuner to automatic gain. */
@@ -377,7 +379,6 @@ export class R8xx implements Tuner {
 
   /**
    * Checks whether the PLL has achieved lock.
-   * @param firstTry Whether this is the first try to achieve lock.
    */
   private async _getPllLock() {
     let firstTry = true;
@@ -390,7 +391,7 @@ export class R8xx implements Tuner {
         return;
       }
       if (!firstTry) {
-        this.hasPllLock = true;
+        this.hasPllLock = false;
         return;
       }
       // [7:5] VCO core power 3
