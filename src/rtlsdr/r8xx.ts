@@ -49,63 +49,59 @@ export class R8xx implements Tuner {
 
   /** Initial values for registers 0x05-0x1f. */
   static REGISTERS = [
-    // 0x05
-    // [7] loop through off [6] 0 [5] LNA 1 on [4] LNA gain auto [3:0] LNA gain 3
+    // Reg 0x05: [7] Loop-through off (1=off, 0=on), [6] Cable 1 LNA off, [5] LNA 1 power on (0=on, 1=off), [4] LNA gain auto (0=auto, 1=manual), [3:0] LNA manual gain 3
     0b10000011,
-    // [7] power detector 1 on [6] power detector 3 off [5] filter gain +3dB [4] 1 [3] 0 [2:0] LNA power 2
+    // Reg 0x06: [7] Power detector 1 on (0=on, 1=off), [6] Power detector 3 narrowband on (0=on, 1=off), [5] Filter gain +3dB, [4] Mixer 6MHz filter on, [3] Cable 2 LNA off, [2:0] LNA bias power 2
     0b00110010,
-    // [7] 0 [6] mixer power on [5] mixer current normal [4] mixer gain auto [3:0] mixer gain 5
+    // Reg 0x07: [7] Mixer sideband lower (0=lower, 1=upper), [6] Mixer power on (1=on, 0=off), [5] Mixer current normal, [4] Mixer gain auto (1=auto, 0=manual), [3:0] Mixer manual gain 5
     0b01110101,
-    // 0x08
-    // [7] mixer buffer power on [6] mixer buffer low current [5:0] image gain adjustment 0
+    // Reg 0x08: [7] Mixer buffer power on (1=on, 0=off), [6] Mixer buffer low current, [5:0] Image gain adjustment (IMR_G) 0
     0b11000000,
-    // [7] IF filter off [6] IF filter low current [5:0] image phase adjustment 0
+    // Reg 0x09: [7] IF filter power on (0=on, 1=off), [6] IF filter low current, [5:0] Image phase adjustment (IMR_P) 0
     0b01000000,
-    // [7] channel filter on [6:5] filter power 2 [4] 1 [3:0] filter bandwidth fine tune 6
+    // Reg 0x0a: [7] Channel filter power on (1=on, 0=off), [6:5] Filter power level 2, [4] Channel filter high Q, [3:0] Filter bandwidth fine tune 6
     0b11010110,
-    // [7] 0 [6:5] filter bandwidth coarse tune 3 [4] 0 [3:0] high pass filter corner 12
+    // Reg 0x0b: [7:5] Filter bandwidth coarse tune 3, [4] Filter calibration trigger (0=idle), [3:0] High-pass filter corner 12
     0b01101100,
-    // [7] 1 [6] VGA power on [5] 1 [4] VGA gain controlled by pin [3:0] VGA gain 5.5dB
+    // Reg 0x0c: [7] Fixed 1, [6] IF VGA power on (1=on, 0=off), [5] Fixed 1, [4] VGA gain mode (1=pin/auto, 0=manual), [3:0] VGA manual gain 5.5dB
     0b11110101,
-    // [7:4] LNA agc power detector threshold high 0.94V [3:0] LNA agc power detector threshold low 0.64V
+    // Reg 0x0d: [7:4] LNA AGC power detector high threshold 0.94V, [3:0] Low threshold 0.64V
     0b01100011,
-    // [7:4] Mixer agc power detector threshold high 1.04V [3:0] Mixer agd power detector threshold low 0.84V
+    // Reg 0x0e: [7:4] Mixer AGC power detector high threshold 1.04V, [3:0] Low threshold 0.84V
     0b01110101,
-    // [7] 0 [6:5] LDO 3.0V [4] clock output off [3] 1 [2] 0 [1] internal agc clock on [0] 0
+    // Reg 0x0f: [7] Filter extension widest off, [6:5] LDO voltage 3.0V, [4] Clock output off (0=on, 1=off), [3] Fixed 1, [2] Filter calibration clock off, [1] Internal AGC clock on, [0] Fixed 0
     0b01101000,
-    // 0x10
-    // [7:5] PLL to mixer divider 1:1 [4] PLL divider 1 [3] xtal swing low [2] 1 [1:0] Internal xtal cap (none)
+    // Reg 0x10: [7:5] PLL-to-mixer divider 3 (1/16), [4] PLL reference divider 1:1 (0=1:1, 1=1:2), [3] Crystal swing low (1=low, 0=high), [2] Fixed 1, [1:0] Internal crystal cap 0 pF
     0b01101100,
-    // [7:6] PLL analog regulator 2.0V [5] 0 [4] 0 [3] 0 [2] 0 [1] 1 [0] 1
+    // Reg 0x11: [7:6] PLL analog regulator 2.0V (10=2.0V, 00=off), [5:4] Charge pump bias 0, [3] Calibration bias 0, [2:0] Reference bias 3
     0b10000011,
-    // [7] 1 [6:4] 0 [3] ? [2:0] 0
+    // Reg 0x12: [7:5] VCO core current level 4 (mid), [4] Fixed 0, [3] Sigma-delta modulator (SDM) dither/power (0=fractional-N on, 1=integer-N), [2:0] Fixed 0
     0b10000000,
-    // [7:0] 0
+    // Reg 0x13: [7:6] VCO control 0, [5:0] VCO frequency band 0
     0b00000000,
-    // [7:6] SI2C = 0 [5:0] NI2C = 15
+    // Reg 0x14: [7:6] Phase-splitter remainder SI = 0, [5:0] Integer divider word NI = 15
     0b00001111,
-    // [7:0] SDM_IN[16:9]
+    // Reg 0x15: [7:0] SDM fractional division value low byte SDM_IN[8:1] = 0x00
     0b00000000,
-    // [7:0] SDM_IN[8:1]
+    // Reg 0x16: [7:0] SDM fractional division value high byte SDM_IN[16:9] = 0xc0
     0b11000000,
-    // [7:6] PLL digital regulator 1.8V, 8mA [5:4] 1 [3] open drain high-Z [2] 1 [1:0] 0
+    // Reg 0x17: [7:6] PLL digital regulator 1.8V 8mA (00=on, 11=off), [5:4] Prescaler 4/5 current 150uA, [3] Open-drain pin (0=high-Z, 1=low-Z), [2:0] Bias 0
     0b00110000,
-    // 0x18
-    // [7] 0 [6] 1 [5:0] -
+    // Reg 0x18: [7:6] Ring VCO bias (01), [5] Ring power, [4] Image rejection bias, [3:0] Reserved (1000)
     0b01001000,
-    // [7] RF filter power on [6:5] 0 [4] agc_pin = agc_in [3:2] 1 [1:0] -
+    // Reg 0x19: [7] RF filter power on (1=on, 0=off), [6:5] RF polyphase filter current normal (10), [4] AGC pin select (0=agc_in, 1=agc_in2), [3:0] Ring divider (1100)
     0b11001100,
-    // [7:6] tracking filter bypass [5] 1 [4] 0 [3:2] PLL auto tune 128kHz [1:0] RF filter highest band
+    // Reg 0x1a: [7:6] Tracking filter bypass (01=bypass, 00=on), [5:4] AGC clock period 80ms (10), [3:2] PLL auto-tune clock 128kHz (00), [1:0] RF filter highest band (00)
     0b01100000,
-    // [7:4] highest corner for LPNF [3:0] highest corner for LPF
+    // Reg 0x1b: [7:4] Low-pass notch filter (LPNF) highest corner (0000), [3:0] Tracking filter low-pass (LPF) highest corner (0000)
     0b00000000,
-    // [7:4] power detector 3 TOP 5 [3] 0 [2] 1 [1] - [0] 0
+    // Reg 0x1c: [7:4] Power detector 3 take-over point (TOP) 5, [3] Mixer discharge normal, [2] LNA power detector low discharge mode, [1:0] Reserved (00)
     0b01010100,
-    // [7:6] 1 [5:3] power detector 1 TOP 5 [2:0] power detector 2 TOP 6
+    // Reg 0x1d: [7:6] LNA narrow-band power detector bandwidth (10), [5:3] Power detector 1 TOP 5, [2:0] Power detector 2 TOP 6
     0b10101110,
-    // [7] 0 [6] filter extension enable [5:0] power detector timing control 10
+    // Reg 0x1e: [7] Reserved 0, [6] Filter extension enable, [5] Channel filter extension at max LNA gain off, [4:0] LNA discharge current / PDET timing 10
     0b01001010,
-    // [7:6] 1 [5:2] 0 [1:0] -
+    // Reg 0x1f: [7] Loop-through attenuation bypass (1=bypass, 0=enable), [6] Fixed 1, [5:0] Reserved 0
     0b11000000,
   ];
 
@@ -134,6 +130,7 @@ export class R8xx implements Tuner {
     await com.openI2C();
     let found = false;
     try {
+      // Read Byte 0: Tuner chip ID (0x69 for Rafael Micro R82xx tuners)
       let data = await com.getI2CReg(i2c, 0);
       found = data == 0x69;
     } catch {}
@@ -170,13 +167,14 @@ export class R8xx implements Tuner {
 
   /** Starts the tuner. */
   async open() {
-    // [0] disable zero-IF input [1] enable DC estimation [3] enable IQ compensation [4] enable IQ estimation
+    // Demod Page 1, Reg 0xb1: [0] Disable Zero-IF input (low-IF mode), [1] Enable DC estimation, [3] Enable IQ compensation, [4] Enable IQ estimation
     await this.com.setDemodReg(1, 0xb1, 0b00011010, 1);
-    // [6] enable ADC_Q [7] disable ADC_I
+    // Demod Page 0, Reg 0x08: [7] Disable ADC_I, [6] Enable ADC_Q (tuner IF output is routed to Q ADC)
     await this.com.setDemodReg(0, 0x08, 0b01001101, 1);
-    // [0] inverted spectrum
+    // Demod Page 1, Reg 0x15: [0] Inverted spectrum (matches lower-sideband low-IF mixing)
     await this.com.setDemodReg(1, 0x15, 0b00000001, 1);
     await this.com.openI2C();
+    // Initialize tuner registers 0x05 through 0x1f with baseline configuration
     this.shadowRegs = new Uint8Array(R8xx.REGISTERS);
     for (let i = 0; i < this.shadowRegs.length; ++i) {
       await this.com.setI2CReg(this.i2c, i + 5, this.shadowRegs[i]);
@@ -188,38 +186,38 @@ export class R8xx implements Tuner {
   /** Stops the tuner. */
   async close() {
     await this.com.openI2C();
-    // [7] power detector 1 off [6] power detector 3 off [5] filter gain [2:0] LNA power 1
+    // Reg 0x06: [7] Power detector 1 off, [6] Power detector 3 narrowband off, [5] Filter gain +3dB, [4] Mixer 6MHz filter on, [2:0] LNA power 1
     await this._writeRegMask(0x06, 0b10110001, 0xff);
-    // [7] loop through off [5] lna 1 power off [4] LNA gain manual [3:0] LNA gain 3
+    // Reg 0x05: [7] Loop-through off, [5] LNA 1 power off, [4] LNA gain manual, [3:0] LNA manual gain 3
     await this._writeRegMask(0x05, 0b10110011, 0xff);
-    // [6] mixer power off [5] mixer normal current [4] mixer gain auto [3:0] mixer gain 10
+    // Reg 0x07: [6] Mixer power off, [5] Mixer normal current, [4] Mixer gain auto, [3:0] Mixer gain 10
     await this._writeRegMask(0x07, 0b00111010, 0xff);
-    // [7] mixer buffer power off [6] mixer buffer low current [5:0] image gain 0
+    // Reg 0x08: [7] Mixer buffer power off, [6] Mixer buffer low current, [5:0] Image gain 0
     await this._writeRegMask(0x08, 0b01000000, 0xff);
-    // [7] IF filter off [6] IF filter low current [5:0] image phase 0
+    // Reg 0x09: [7] IF filter power off, [6] IF filter low current, [5:0] Image phase 0
     await this._writeRegMask(0x09, 0b11000000, 0xff);
-    // [7] channel filter off [6:5] filter power 1 [3:0] filter bandwidth 6
+    // Reg 0x0a: [7] Channel filter power off, [6:5] Filter power level 1, [3:0] Filter bandwidth 6
     await this._writeRegMask(0x0a, 0b00111010, 0xff);
-    // [6] vga power off [4] vga controlled by pin [3:0] vga gain 5
+    // Reg 0x0c: [6] IF VGA power off, [4] VGA gain controlled by pin, [3:0] VGA gain 5.5dB
     await this._writeRegMask(0x0c, 0b00110101, 0xff);
-    // [4] clock output on [1] internal agc clock on
+    // Reg 0x0f: [6:5] LDO 3.0V, [4] Clock output off, [1] Internal AGC clock on
     await this._writeRegMask(0x0f, 0b01101000, 0xff);
-    // [7:6] pll analog regulator off
+    // Reg 0x11: [7:6] PLL analog regulator off, [2:0] Reference bias 3
     await this._writeRegMask(0x11, 0b00000011, 0xff);
-    // [7:6] pll digital regulator off [3] open drain high-Z
+    // Reg 0x17: [7:6] PLL digital regulator off, [5:4] Prescaler current 150uA, [3] Open-drain high-Z
     await this._writeRegMask(0x17, 0b11110100, 0xff);
-    // [7] rf filter power off [4] agc pin = agc_in
+    // Reg 0x19: [7] RF filter power off, [4] AGC pin = agc_in
     await this._writeRegMask(0x19, 0b00001100, 0xff);
     await this.com.closeI2C();
   }
 
   /** Sets the tuner to automatic gain. */
   async setAutoGain() {
-    // [4] lna gain auto
+    // Reg 0x05: [4] LNA gain mode automatic (0 = auto AGC, 1 = manual)
     await this._writeRegMask(0x05, 0b00000000, 0b00010000);
-    // [4] mixer gain auto
+    // Reg 0x07: [4] Mixer gain mode automatic (1 = auto AGC, 0 = manual)
     await this._writeRegMask(0x07, 0b00010000, 0b00010000);
-    // [4] IF vga mode manual [3:0] IF vga gain 26.5dB
+    // Reg 0x0c: [4] IF VGA gain mode manual (0 = manual, 1 = pin), [3:0] IF VGA gain 26.5dB (code 11)
     await this._writeRegMask(0x0c, 0b00001011, 0b10011111);
   }
 
@@ -236,15 +234,15 @@ export class R8xx implements Tuner {
     if (fullsteps == 15) halfsteps = 0;
     let lnaValue = fullsteps + halfsteps;
     let mixerValue = fullsteps;
-    // [4] lna gain manual
+    // Reg 0x05: [4] LNA gain mode manual (1 = manual, 0 = auto)
     await this._writeRegMask(0x05, 0b00010000, 0b00010000);
-    // [4] mixer gain manual
+    // Reg 0x07: [4] Mixer gain mode manual (0 = manual, 1 = auto)
     await this._writeRegMask(0x07, 0b00000000, 0b00010000);
-    // [4] vga mode manual [3:0] vga gain 16dB
+    // Reg 0x0c: [4] IF VGA gain mode manual (0 = manual), [3:0] IF VGA gain 16dB (code 8)
     await this._writeRegMask(0x0c, 0b00001000, 0b10011111);
-    // [3:0] lna gain
+    // Reg 0x05: [3:0] LNA manual gain code (0..15)
     await this._writeRegMask(0x05, lnaValue, 0b00001111);
-    // [3:0] mixer gain
+    // Reg 0x07: [3:0] Mixer manual gain code (0..15)
     await this._writeRegMask(0x07, mixerValue, 0b00001111);
   }
 
