@@ -124,9 +124,9 @@ export class RtlCom {
   }
 
   /**
-   * Reads a buffer from an I2C register.
+   * Reads a buffer from a series of I2C registers.
    * @param addr The device's address.
-   * @param reg The register number.
+   * @param reg The first register's number.
    * @param len The number of bytes to read.
    * @returns a promise that resolves to the read buffer.
    */
@@ -137,6 +137,26 @@ export class RtlCom {
   ): Promise<ArrayBuffer> {
     await this._setRegBuffer(0x600, addr, new Uint8Array([reg]).buffer);
     return this._getRegBuffer(0x600, addr, len);
+  }
+
+  /**
+   * Writes a buffer to a series of I2C registers.
+   * @param addr The device's address.
+   * @param reg The first register's number.
+   * @param values The values to write.
+   */
+  async setI2CRegBuffer(
+    addr: number,
+    reg: number,
+    values: Uint8Array,
+  ) {
+    let payload = new Uint8Array(8);
+    for (let i = 0; i < values.length; i += 7) {
+      let chunk = values.subarray(i, i + 7);
+      payload[0] = reg + i;
+      payload.set(chunk, 1);
+      await this._setRegBuffer(0x600, addr, payload.subarray(0, chunk.length + 1).buffer);
+    }
   }
 
   async setGpioOutput(gpio: number) {

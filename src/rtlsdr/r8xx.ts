@@ -71,8 +71,8 @@ export class R8xx implements Tuner {
     0b01110101,
     // Reg 0x0f: [7] Filter extension widest off, [6:5] LDO voltage 3.0V, [4] Clock output off (0=on, 1=off), [3] Fixed 1, [2] Filter calibration clock off, [1] Internal AGC clock on, [0] Fixed 0
     0b01101000,
-    // Reg 0x10: [7:5] PLL-to-mixer divider 3 (1/16), [4] PLL reference divider 1:1 (0=1:1, 1=1:2), [3] Crystal swing low (1=low, 0=high), [2] Fixed 1, [1:0] Internal crystal cap 0 pF
-    0b01101100,
+    // Reg 0x10: [7:5] PLL-to-mixer divider 3 (1/16), [4] PLL reference divider 1:1 (0=1:1, 1=1:2), [3] Crystal swing high (1=low, 0=high), [2] Fixed 1, [1:0] Internal crystal cap 0 pF
+    0b01100100,
     // Reg 0x11: [7:6] PLL analog regulator 2.0V (10=2.0V, 00=off), [5:4] Charge pump bias 0, [3] Calibration bias 0, [2:0] Reference bias 3
     0b10000011,
     // Reg 0x12: [7:5] VCO core current level 4 (mid), [4] Fixed 0, [3] Sigma-delta modulator (SDM) dither/power (0=fractional-N on, 1=integer-N), [2:0] Fixed 0
@@ -147,7 +147,7 @@ export class R8xx implements Tuner {
     protected com: RtlCom,
     private i2c: number,
     private muxCfgs: [number, number, number, number][],
-    private vcoPowerRef: number
+    private vcoPowerRef: number,
   ) {
     this.xtalFreq = R8xx.XTAL_FREQ;
     this.hasPllLock = false;
@@ -176,9 +176,8 @@ export class R8xx implements Tuner {
     await this.com.openI2C();
     // Initialize tuner registers 0x05 through 0x1f with baseline configuration
     this.shadowRegs = new Uint8Array(R8xx.REGISTERS);
-    for (let i = 0; i < this.shadowRegs.length; ++i) {
-      await this.com.setI2CReg(this.i2c, i + 5, this.shadowRegs[i]);
-    }
+    await this.com.setI2CRegBuffer(this.i2c, 5, this.shadowRegs);
+    await new Promise((r) => setTimeout(r, 5)); // Wait 5 msec before resuming initialization
     await this._initElectronics();
     await this.com.closeI2C();
   }
@@ -272,7 +271,7 @@ export class R8xx implements Tuner {
       if (!this.hasPllLock) {
         throw new RadioError(
           "PLL not locked -- cannot tune to the selected frequency.",
-          RadioErrorType.TunerError
+          RadioErrorType.TunerError,
         );
       }
       // Reg 0x0b: [4] Trigger channel filter auto-calibration start
@@ -337,7 +336,7 @@ export class R8xx implements Tuner {
     await this._writeRegMask(0x12, 0b10000000, 0b11100000);
     let divNum = Math.max(
       0,
-      Math.min(6, Math.floor(Math.log(1770000000 / freq) / Math.LN2))
+      Math.min(6, Math.floor(Math.log(1770000000 / freq) / Math.LN2)),
     );
     let mixDiv = 1 << (divNum + 1);
     let data = await this._readRegBuffer(0x00, 5);
@@ -349,8 +348,6 @@ export class R8xx implements Tuner {
     } else if (vcoFineTune < this.vcoPowerRef) {
       divNum = Math.min(6, divNum + 1);
     }
-    // Reg 0x10: [7:5] PLL to mixer divider (divNum: 0=1/2, 1=1/4, 2=1/8, 3=1/16, 4=1/32, 5=1/64)
-    await this._writeRegMask(0x10, divNum << 5, 0b11100000);
     let vcoFreq = freq * mixDiv;
     let nint = Math.floor(vcoFreq / (2 * pllRef));
     let vcoFra = vcoFreq % (2 * pllRef);
@@ -360,15 +357,19 @@ export class R8xx implements Tuner {
     }
     let ni = Math.floor((nint - 13) / 4);
     let si = (nint - 13) % 4;
-    // Reg 0x14: [7:6] si (phase splitter 2-bit remainder), [5:0] ni (integer divider word)
-    await this._writeRegMask(0x14, ni + (si << 6), 0b11111111);
-    // Reg 0x12: [3] Sigma-delta dither/power (0 = fractional-N active, 1 = integer-N)
-    await this._writeRegMask(0x12, vcoFra == 0 ? 0b1000 : 0b0000, 0b00001000);
     let sdm = Math.min(65535, Math.floor((32768 * vcoFra) / pllRef));
-    // Reg 0x16: SDM fractional division value high byte [16:9]
-    await this._writeRegMask(0x16, sdm >> 8, 0b11111111);
+    // Reg 0x10: [7:5] PLL to mixer divider (divNum: 0=1/2, 1=1/4, 2=1/8, 3=1/16, 4=1/32, 5=1/64)
+    this._setRegMask(0x10, divNum << 5, 0b11100000);
+    // Reg 0x12: [3] Sigma-delta dither/power (0 = fractional-N active, 1 = integer-N)
+    this._setRegMask(0x12, vcoFra == 0 ? 0b1000 : 0b0000, 0b00001000);
+    // Reg 0x14: [7:6] si (phase splitter 2-bit remainder), [5:0] ni (integer divider word)
+    this._setRegMask(0x14, ni + (si << 6), 0b11111111);
     // Reg 0x15: SDM fractional division value low byte [8:1]
-    await this._writeRegMask(0x15, sdm & 0xff, 0b11111111);
+    this._setRegMask(0x15, sdm & 0xff, 0b11111111);
+    // Reg 0x16: SDM fractional division value high byte [16:9]
+    this._setRegMask(0x16, sdm >> 8, 0b11111111);
+    // Write registers 0x10-0x16
+    await this._writeRegs(0x10, 7);
     await this._getPllLock();
     // Reg 0x1a: [3:2] PLL auto-tune clock rate 8 kHz (settled operation)
     await this._writeRegMask(0x1a, 0b00001000, 0b00001000);
@@ -389,8 +390,8 @@ export class R8xx implements Tuner {
           this.hasPllLock = true;
           return;
         }
-        // Wait 1, 2, 3, and 4 milliseconds before retrying.
-        await new Promise(r => setTimeout(r, i));
+        // Wait 5, 10, 15, and 20 milliseconds before retrying.
+        await new Promise((r) => setTimeout(r, i * 5));
       }
       if (!firstTry) {
         this.hasPllLock = false;
@@ -467,13 +468,13 @@ export class R8xx implements Tuner {
 
   /**
    * Reads a series of registers into a buffer.
-   * @param addr The first register's address to read.
+   * @param addr The address of the first register to read.
    * @param length The number of registers to read.
    * @returns a promise that resolves to an ArrayBuffer with the data.
    */
   protected async _readRegBuffer(
     addr: number,
-    length: number
+    length: number,
   ): Promise<ArrayBuffer> {
     let data = await this.com.getI2CRegBuffer(this.i2c, addr, length);
     let buf = new Uint8Array(data);
@@ -495,5 +496,29 @@ export class R8xx implements Tuner {
     let val = (rc & ~mask) | (value & mask);
     this.shadowRegs[addr - 5] = val;
     await this.com.setI2CReg(this.i2c, addr, val);
+  }
+
+  /**
+   * Writes a masked value into a register position in the shadow register buffer.
+   * @param addr The address of the register to write into.
+   * @param value The value to write.
+   * @param mask A mask that specifies which bits to write.
+   */
+  protected _setRegMask(addr: number, value: number, mask: number) {
+    let rc = this.shadowRegs[addr - 5];
+    this.shadowRegs[addr - 5] = (rc & ~mask) | (value & mask);
+  }
+
+  /**
+   * Writes a series of registers from the shadow register buffer.
+   * @param addr The address of the first register to write.
+   * @param length The number of registers to write.
+   */
+  protected async _writeRegs(
+    addr: number,
+    length: number,
+  ) {
+    let start = addr - 5;
+    await this.com.setI2CRegBuffer(this.i2c, addr, this.shadowRegs.subarray(start, start + length));
   }
 }
