@@ -48,6 +48,11 @@ export class R828D extends R8xx implements Tuner {
     this.input = -1;
   }
 
+  async open(): Promise<void> {
+    await super.open();
+    this.input = -1;
+  }
+
   /**
    * Sets the tuner's frequency.
    * @param freq The frequency to tune to.
