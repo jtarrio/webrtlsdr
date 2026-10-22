@@ -4,10 +4,7 @@ import {
   getSchemes,
   modeParameters,
 } from "@jtarrio/signals/demod/modes.js";
-import {
-  Radio,
-  RtlProvider,
-} from "@jtarrio/webrtlsdr/radio.js";
+import { Radio, RtlProvider } from "@jtarrio/webrtlsdr/radio.js";
 import { DirectSampling } from "@jtarrio/webrtlsdr/rtlsdr.js";
 
 var elements = {};
@@ -41,6 +38,8 @@ async function main() {
   elements.frequencyInput.addEventListener("change", onFrequencyInputChange);
   elements.offsetInput.addEventListener("change", onOffsetInputChange);
   elements.ppmInput.addEventListener("change", onPpmInputChange);
+  elements.sampleRate.addEventListener("change", onSampleRateInputChange);
+  elements.buffersPerSec.addEventListener("change", onBuffersPerSecInputChange);
   elements.autoGainBox.addEventListener("change", onAutoGainBoxChange);
   elements.gainInput.addEventListener("change", onGainInputChange);
   elements.volumeInput.addEventListener("change", onVolumeInputChange);
@@ -54,7 +53,7 @@ function onFrequencyInputChange() {
   setNumberInput(
     elements.frequencyInput,
     () => radio.getFrequency(),
-    (v) => radio.setFrequency(v)
+    (v) => radio.setFrequency(v),
   );
 }
 
@@ -62,7 +61,7 @@ function onOffsetInputChange() {
   setNumberInput(
     elements.offsetInput,
     () => demodulator.getFrequencyOffset(),
-    (v) => demodulator.setFrequencyOffset(v)
+    (v) => demodulator.setFrequencyOffset(v),
   );
 }
 
@@ -70,7 +69,23 @@ function onPpmInputChange() {
   setNumberInput(
     elements.ppmInput,
     () => radio.getFrequencyCorrection(),
-    (v) => radio.setFrequencyCorrection(v)
+    (v) => radio.setFrequencyCorrection(v),
+  );
+}
+
+function onSampleRateInputChange() {
+  setNumberInput(
+    elements.sampleRate,
+    () => radio.getSampleRate(),
+    (v) => radio.setSampleRate(v),
+  );
+}
+
+function onBuffersPerSecInputChange() {
+  setNumberInput(
+    elements.buffersPerSec,
+    () => radio.getOptions().buffersPerSecond || 20,
+    (v) => radio.setOptions({ ...radio.getOptions(), buffersPerSecond: v }),
   );
 }
 
@@ -88,7 +103,7 @@ function onGainInputChange() {
   setNumberInput(
     elements.gainInput,
     () => radio.getGain(),
-    (v) => radio.setGain(v)
+    (v) => radio.setGain(v),
   );
 }
 
@@ -96,7 +111,7 @@ function onVolumeInputChange() {
   setNumberInput(
     elements.volumeInput,
     () => Math.floor(demodulator.getVolume() * 100),
-    (v) => demodulator.setVolume(v / 100)
+    (v) => demodulator.setVolume(v / 100),
   );
 }
 
@@ -123,7 +138,7 @@ function onBandwidthInputChange() {
   setNumberInput(
     elements.bandwidthInput,
     () => modeParams.getBandwidth(),
-    (v) => demodulator.setMode(modeParams.setBandwidth(v).mode)
+    (v) => demodulator.setMode(modeParams.setBandwidth(v).mode),
   );
 }
 
@@ -132,7 +147,7 @@ function onSquelchInputChange() {
   setNumberInput(
     elements.squelchInput,
     () => modeParams.getSquelch(),
-    (v) => demodulator.setMode(modeParams.setSquelch(v).mode)
+    (v) => demodulator.setMode(modeParams.setSquelch(v).mode),
   );
 }
 
@@ -155,7 +170,10 @@ function setNumberInput(element, getter, setter) {
 function onRadio(e) {
   let msg = `${new Date().toISOString()} — ${e.detail.type}`;
   if (e.detail.type == "directSampling") msg += ` — ${e.detail.active}`;
-  if (e.detail.type == "error") msg += ` — ${e.detail.exception}`;
+  if (e.detail.type == "error") {
+    msg += ` — ${e.detail.exception}`;
+    if (e.detail.exception.cause) msg += ` — ${e.detail.exception.cause}`;
+  }
   elements.logArea.value = msg + "\n" + elements.logArea.value;
   if (e.detail.type == "started" || e.detail.type == "stopped") {
     elements.playButton.disabled = radio.isPlaying();
@@ -175,6 +193,8 @@ function preparePage() {
     "frequencyInput",
     "offsetInput",
     "ppmInput",
+    "sampleRate",
+    "buffersPerSec",
     "autoGainBox",
     "gainInput",
     "volumeInput",
@@ -200,6 +220,8 @@ function preparePage() {
   elements.frequencyInput.value = String(radio.getFrequency());
   elements.offsetInput.value = String(demodulator.getFrequencyOffset());
   elements.ppmInput.value = String(radio.getFrequencyCorrection());
+  elements.sampleRate.value = String(radio.getSampleRate());
+  elements.buffersPerSec.value = String(radio.getOptions().buffersPerSecond || 20);
   let gain = radio.getGain();
   elements.autoGainBox.checked = gain == null;
   elements.gainInput.disabled = gain == null;
@@ -207,7 +229,7 @@ function preparePage() {
     elements.gainInput.value = String(gain);
   }
   elements.volumeInput.value = String(
-    Math.floor(demodulator.getVolume() * 100)
+    Math.floor(demodulator.getVolume() * 100),
   );
   let mode = demodulator.getMode();
   for (let option of elements.schemeSelect.options) {
