@@ -95,6 +95,7 @@ export class RTL2832U implements RtlDevice {
     this.directSamplingMethod = DirectSampling.Off;
     this.directSampling = DirectSampling.Off;
     this.biasTeeEnabled = false;
+    this.sampleRate = 0;
   }
 
   private centerFrequency: number;
@@ -103,6 +104,7 @@ export class RTL2832U implements RtlDevice {
   private directSamplingMethod: DirectSampling;
   private directSampling: DirectSampling;
   private biasTeeEnabled: boolean;
+  private sampleRate: number;
 
   /**
    * Initializes the demodulator.
@@ -204,6 +206,7 @@ export class RTL2832U implements RtlDevice {
    * @returns a promise that resolves to the sample rate that was actually set.
    */
   async setSampleRate(rate: number): Promise<number> {
+    this.sampleRate = rate;
     let ratio = Math.floor((this._getXtalFrequency() * (1 << 22)) / rate);
     ratio &= 0x0ffffffc;
     let realRate = Math.floor((this._getXtalFrequency() * (1 << 22)) / ratio);
@@ -229,6 +232,9 @@ export class RTL2832U implements RtlDevice {
     }
     if (this.centerFrequency != 0) {
       await this.setCenterFrequency(this.centerFrequency);
+    }
+    if (this.sampleRate != 0) {
+      await this.setSampleRate(this.sampleRate);
     }
   }
 
@@ -345,7 +351,7 @@ export class RTL2832U implements RtlDevice {
       // Demod Page 0, Reg 0x06: [5:4] Select ADC datapath (0b00 for I-branch direct sampling, 0b01 to route Q ADC to I datapath)
       let regValue = method == DirectSampling.I ? 0b10000000 : 0b10010000;
       await this.com.setDemodReg(0, 0x06, regValue, 1);
-      await this._enableRtlAgc(true);
+      await this._enableRtlAgc(this.gain == null);
     } else {
       await this.tuner.open();
       let ifFreq = this.tuner.getIntermediateFrequency();
