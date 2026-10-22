@@ -1,12 +1,17 @@
 # Change log
 
-## Still unreleased
+## 3.0.7
 
+* `RtlSource`: Return parameter values from `setParameter()` so settings (such as gain) are not lost when modified while playing.
+* `R828D`: Fixed an issue where the input path was not reconnected after exiting direct sampling mode.
+* `RTL2832U`: Preserved manual gain when entering direct sampling mode, and reapplied sample rate when frequency correction (PPM) changes.
 * Recover from stalls in USB control messages.
+* Improved tuner PLL stability by setting crystal swing high, adding settling delays after power-on, and writing PLL registers in a single burst.
 * Automatic retry on tuner PLL lock failure.
 * `Radio`: Return the requested frequency and sample rate from setters.
 * Fixed handling of the I2C repeater and ensured internal asynchronous operations are awaited.
 * Improved documentation for RTL2832U and tuner registers.
+* Updated `@jtarrio/signals` dependency to `0.10.2`.
 
 ## 3.0.6
 
