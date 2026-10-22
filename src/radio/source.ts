@@ -52,16 +52,20 @@ export class RtlSource implements SignalSource<RtlParameter> {
     return freq;
   }
 
-  setParameter<V>(parameter: RtlParameter, value: V): Promise<void | V> {
+  async setParameter<V>(parameter: RtlParameter, value: V): Promise<void | V> {
     switch (parameter) {
       case "bias_tee":
-        return this.rtl.enableBiasTee(value as boolean);
+        await this.rtl.enableBiasTee(value as boolean);
+        return value;
       case "direct_sampling_method":
-        return this.rtl.setDirectSamplingMethod(value as DirectSampling);
+        await this.rtl.setDirectSamplingMethod(value as DirectSampling);
+        return value;
       case "frequency_correction":
-        return this.rtl.setFrequencyCorrection(value as number);
+        await this.rtl.setFrequencyCorrection(value as number);
+        return value;
       case "gain":
-        return this.rtl.setGain(value as number | null);
+        await this.rtl.setGain(value as number | null);
+        return value;
     }
   }
 
