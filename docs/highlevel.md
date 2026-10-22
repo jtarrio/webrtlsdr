@@ -30,14 +30,14 @@ The `Radio` class has the following methods:
 - `start()`: start reading from the stick and playing the demodulated signals. This method returns a promise that resolves when the radio is playing.
 - `stop()`: stop reading from the stick. This method returns a promise that resolves when the radio is not playing.
 - `isPlaying()`: returns whether the radio is playing.
-- `setSampleRate()`/`getSampleRate()`: sets and returns the radio's sample rate. The change only takes effect when the radio starts playing.
+- `setSampleRate()`/`getSampleRate()`: sets and returns the radio's sample rate.
 - `setFrequency()`/`getFrequency()`: sets and returns the radio's tuned frequency.
 - `setGain()`/`getGain()`: sets and returns the radio's current gain.
 - `setFrequencyCorrection()`/`getFrequencyCorrection()`: sets and returns the current frequency correction factor, in parts-per-million (PPM).
 - `setDirectSamplingMethod()`/`getDirectSamplingMethod()`: sets and returns the current direct sampling method .
 - `enableBiasTee()`/`isBiasTeeEnabled()`: enables or disables the bias T.
 
-The `start()`, `stop()`, `enableBiasTee()`, and all the `setXxx()` methods return a promise. For `setSampleRate()`, the promise resolves immediately; for every other method, the promise resolves after the change takes effect.
+The `start()`, `stop()`, `enableBiasTee()`, and all the `setXxx()` methods return a promise that resolves after the change takes effect.
 
 ```typescript
 // Set automatic gain
