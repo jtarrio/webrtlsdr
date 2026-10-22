@@ -12,6 +12,7 @@
 * Fixed handling of the I2C repeater and ensured internal asynchronous operations are awaited.
 * Improved documentation for RTL2832U and tuner registers.
 * Updated `@jtarrio/signals` dependency to `0.10.2`.
+* Thanks to [diddy](https://github.com/diddy-boy) for the notes!
 
 ## 3.0.6
 
